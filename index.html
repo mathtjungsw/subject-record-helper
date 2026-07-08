@@ -203,6 +203,26 @@
       background: var(--brand-soft);
       color: var(--brand-dark);
     }
+    .compact-tools {
+      margin: 12px 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffaf1;
+      padding: 10px 12px;
+    }
+    .compact-tools summary {
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--brand-dark);
+    }
+    .material-detail {
+      margin-top: 10px;
+    }
+    .material-detail summary {
+      cursor: pointer;
+      color: var(--brand-dark);
+      font-weight: 800;
+    }
     .checks { display: grid; gap: 8px; }
     .check-line {
       display: flex;
@@ -704,6 +724,7 @@
     }
 
     function renderMaterialsTab(student) {
+      const selectedCount = student.materials.filter(material => material.selected).length;
       const cards = student.materials.length ? student.materials.map(material => `
         <div class="card" data-material-id="${escapeHtml(material.id)}">
           <div class="card-head">
@@ -712,50 +733,68 @@
               ${escapeHtml(material.title)}
             </label>
             <div class="row">
-              <button class="small" data-action="save-material">수정</button>
               <button class="small danger" data-action="delete-material">삭제</button>
             </div>
           </div>
-          <div class="grid two">
-            <label>자료 제목<input data-field="title" value="${escapeHtml(material.title)}"></label>
-            <label>자료 유형
-              <select data-field="type">
-                ${["보고서", "소감문", "발표자료", "활동기록", "기타"].map(type => `<option ${material.type === type ? "selected" : ""}>${type}</option>`).join("")}
-              </select>
-            </label>
+          <div class="row">
+            <span class="badge gray">${escapeHtml(material.type || "기타")}</span>
+            <span class="muted">${countChars(material.content)}자</span>
+            ${material.sourceFileName ? `<span class="muted">${escapeHtml(material.sourceFileName)}</span>` : ""}
           </div>
-          <label style="margin-top:10px;">자료 내용<textarea data-field="content">${escapeHtml(material.content)}</textarea></label>
           <div class="preview">${escapeHtml((material.content || "내용 없음").slice(0, 320))}</div>
+          <details class="material-detail">
+            <summary>내용 보기/수정</summary>
+            <div class="grid two" style="margin-top:10px;">
+              <label>자료 제목<input data-field="title" value="${escapeHtml(material.title)}"></label>
+              <label>자료 유형
+                <select data-field="type">
+                  ${["보고서", "소감문", "발표자료", "활동기록", "기타"].map(type => `<option ${material.type === type ? "selected" : ""}>${type}</option>`).join("")}
+                </select>
+              </label>
+            </div>
+            <label style="margin-top:10px;">자료 내용<textarea data-field="content">${escapeHtml(material.content)}</textarea></label>
+            <button class="small" data-action="save-material" style="margin-top:8px;">수정 저장</button>
+          </details>
         </div>
       `).join("") : `<div class="empty">아직 학생 자료가 없습니다.</div>`;
       return `
-        <h2>학생 자료 입력/업로드</h2>
-        <div class="grid two">
-          <label>자료 제목<input id="materialTitle" placeholder="예: 탐구 보고서"></label>
-          <label>자료 유형
-            <select id="materialType">
-              <option>보고서</option><option>소감문</option><option>발표자료</option><option>활동기록</option><option>기타</option>
-            </select>
-          </label>
-        </div>
-        <label style="margin-top:12px;">직접 텍스트 붙여넣기
-          <textarea id="materialContent" placeholder="학생 자료 내용을 붙여넣으세요."></textarea>
-        </label>
-        <div class="row" style="margin-top:10px;">
-          <button id="addMaterialBtn" class="primary">자료 추가</button>
-          <label style="display:inline-flex; width:auto; gap:8px; align-items:center;">
-            <span>파일 업로드(txt, md, csv, pdf, 이미지 지원)</span>
-            <input id="materialFileInput" type="file" multiple accept=".txt,.md,.csv,.pdf,.docx,.xlsx,.jpg,.jpeg,.png,image/jpeg,image/png" style="width:260px;">
-          </label>
-          <button id="ocrPdfBtn">PDF/이미지 OCR 시도</button>
-          <input id="ocrPdfInput" class="sr-only" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
-        </div>
-        <div id="materialDropZone" class="drop-zone">
-          <div>
-            <strong>파일을 여기에 드래그해서 추가</strong><br>
-            txt, md, csv, pdf, docx, xlsx, jpg, png 파일을 여러 개 놓을 수 있습니다.
+        <div class="section-title">
+          <h2>학생 자료</h2>
+          <div class="row">
+            <span class="badge">${student.materials.length}개</span>
+            <span class="badge gray">반영 ${selectedCount}개</span>
+            <button id="clearMaterialsBtn" class="small danger">자료 전체삭제</button>
           </div>
         </div>
+        <details class="compact-tools">
+          <summary>자료 추가 도구 열기</summary>
+          <div class="grid two" style="margin-top:12px;">
+            <label>자료 제목<input id="materialTitle" placeholder="예: 탐구 보고서"></label>
+            <label>자료 유형
+              <select id="materialType">
+                <option>보고서</option><option>소감문</option><option>발표자료</option><option>활동기록</option><option>기타</option>
+              </select>
+            </label>
+          </div>
+          <label style="margin-top:12px;">직접 텍스트 붙여넣기
+            <textarea id="materialContent" placeholder="학생 자료 내용을 붙여넣으세요."></textarea>
+          </label>
+          <div class="row" style="margin-top:10px;">
+            <button id="addMaterialBtn" class="primary">자료 추가</button>
+            <label style="display:inline-flex; width:auto; gap:8px; align-items:center;">
+              <span>파일 업로드</span>
+              <input id="materialFileInput" type="file" multiple accept=".txt,.md,.csv,.pdf,.docx,.xlsx,.jpg,.jpeg,.png,image/jpeg,image/png" style="width:260px;">
+            </label>
+            <button id="ocrPdfBtn">PDF/이미지 OCR 시도</button>
+            <input id="ocrPdfInput" class="sr-only" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+          </div>
+          <div id="materialDropZone" class="drop-zone">
+            <div>
+              <strong>파일을 여기에 드래그해서 추가</strong><br>
+              txt, md, csv, pdf, docx, xlsx, jpg, png 파일을 여러 개 놓을 수 있습니다.
+            </div>
+          </div>
+        </details>
         <p id="ocrStatus" class="muted">txt, md, csv, pdf는 내용 추출을 시도하고, 스캔 PDF나 이미지 파일은 OCR로 학생 자료 카드에 등록합니다. docx, xlsx는 내용 추출이 제한되면 직접 붙여넣기 안내로 등록됩니다.</p>
         ${cards}
       `;
@@ -1469,6 +1508,11 @@ ${appData.settings.subject || "해당 과목"} 교과세부능력 및 특기사�
       };
     }
 
+    function createSingleMaterialFromFile(content, fallbackTitle, sourceFileName, type, selected = true) {
+      const title = deriveTitleFromText(content, fallbackTitle);
+      return createMaterialFromUpload(title, content, sourceFileName, type || inferMaterialType(title, content), selected);
+    }
+
     function inferMaterialType(title, content) {
       const text = `${title || ""}\n${content || ""}`;
       if (/소감|느낀/.test(text)) return "소감문";
@@ -1490,20 +1534,20 @@ ${appData.settings.subject || "해당 과목"} 교과세부능력 및 특기사�
         try {
           if (["txt", "md"].includes(ext)) {
             content = await file.text();
-            materials = splitTextIntoMaterials(content, fallbackTitle, file.name);
+            materials = [createSingleMaterialFromFile(content, fallbackTitle, file.name)];
           } else if (ext === "csv") {
             content = await file.text();
-            materials = splitCsvIntoMaterials(content, fallbackTitle, file.name);
+            materials = [createSingleMaterialFromFile(content, fallbackTitle, file.name, "활동기록")];
           } else if (ext === "pdf") {
             try {
               content = await extractPdfText(file);
             } catch (pdfTextError) {
               content = await extractPdfTextWithOcr(file);
             }
-            materials = splitTextIntoMaterials(content, fallbackTitle, file.name);
+            materials = [createSingleMaterialFromFile(content, fallbackTitle, file.name)];
           } else if (isImageFile(file)) {
             content = await extractImageTextWithOcr(file);
-            materials = splitTextIntoMaterials(content, fallbackTitle, file.name);
+            materials = [createSingleMaterialFromFile(content, fallbackTitle, file.name)];
           } else {
             materials = [createMaterialFromUpload(
               fallbackTitle,
@@ -1543,9 +1587,8 @@ ${appData.settings.subject || "해당 과목"} 교과세부능력 및 특기사�
         const fallbackTitle = file.name.replace(/\.[^.]+$/, "");
         try {
           const content = await extractFileTextWithOcr(file);
-          const materials = splitTextIntoMaterials(content, fallbackTitle, file.name);
-          student.materials.push(...materials);
-          addedCount += materials.length;
+          student.materials.push(createSingleMaterialFromFile(content, fallbackTitle, file.name));
+          addedCount += 1;
         } catch (error) {
           student.materials.push(createMaterialFromUpload(
             fallbackTitle,
@@ -1643,6 +1686,18 @@ ${appData.settings.subject || "해당 과목"} 교과세부능력 및 특기사�
       if (!student) return;
       const action = event.target.dataset.action;
       if (event.target.id === "addMaterialBtn") addMaterialFromForm();
+      if (event.target.id === "clearMaterialsBtn") {
+        if (!student.materials.length) {
+          showToast("삭제할 자료가 없습니다.");
+          return;
+        }
+        if (confirm(`${student.name} 학생의 자료 ${student.materials.length}개를 모두 삭제할까요?`)) {
+          student.materials = [];
+          scheduleSave();
+          renderAll();
+          showToast("학생 자료를 모두 삭제했습니다.");
+        }
+      }
       if (event.target.id === "ocrPdfBtn") document.getElementById("ocrPdfInput")?.click();
       if (event.target.id === "generatePromptBtn") {
         student.prompt = generatePrompt();
