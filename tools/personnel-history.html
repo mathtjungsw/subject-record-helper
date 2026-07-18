@@ -190,10 +190,15 @@
     .district-map-head strong { display: block; font-size: 25px; letter-spacing: -.04em; }
     .district-map-head span { display: block; margin-top: 7px; color: var(--muted); font-size: 11px; }
     .coordinate-note { max-width: 290px; color: var(--dim); font: 9px/1.45 var(--mono); text-align: right; }
-    .school-pin { position: absolute; z-index: 3; left: var(--x); top: var(--y); translate: -50% -50%; width: 15px; height: 15px; padding: 0; border: 2px solid #07110e; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 1px rgba(117,230,182,.45), 0 5px 12px rgba(0,0,0,.45); }
-    .school-pin:hover, .school-pin:focus-visible, .school-pin.active { z-index: 6; outline: none; background: var(--amber); box-shadow: 0 0 0 5px rgba(246,199,110,.16); transform: scale(1.25); }
-    .school-pin::after { content: attr(data-label); position: absolute; left: 50%; bottom: 20px; width: max-content; max-width: 180px; padding: 6px 8px; border: 1px solid var(--line-hot); border-radius: 7px; color: var(--text); background: #0b1118; font: 10px/1.2 var(--sans); translate: -50% 4px; opacity: 0; pointer-events: none; transition: .12s ease; }
-    .school-pin:hover::after, .school-pin:focus-visible::after, .school-pin.active::after { translate: -50% 0; opacity: 1; }
+    #schoolPins { position: absolute; z-index: 4; inset: 0; pointer-events: none; }
+    .school-leaders { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+    .school-leader { stroke: rgba(148,162,177,.42); stroke-width: 1; vector-effect: non-scaling-stroke; }
+    .school-leader.active { stroke: var(--amber); stroke-width: 1.5; }
+    .school-dot { position: absolute; z-index: 2; left: var(--x); top: var(--y); width: 3px; height: 3px; border: 0; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 1px rgba(7,17,14,.8); translate: -50% -50%; pointer-events: none; }
+    .school-dot.active { width: 5px; height: 5px; background: var(--amber); box-shadow: 0 0 0 3px rgba(246,199,110,.16); }
+    .school-label { position: absolute; z-index: 3; min-height: 20px; padding: 2px 5px; border: 1px solid rgba(66,85,106,.88); border-radius: 6px; color: #dce4ea; background: rgba(13,19,26,.92); font: 800 9px/1 var(--sans); white-space: nowrap; opacity: 0; pointer-events: auto; box-shadow: 0 2px 7px rgba(0,0,0,.28); }
+    .school-label.ready { opacity: 1; }
+    .school-label:hover, .school-label:focus-visible, .school-label.active { z-index: 7; outline: none; border-color: var(--amber); color: var(--amber); background: #171811; box-shadow: 0 0 0 3px rgba(246,199,110,.12); }
     .map-sources { position: absolute; z-index: 7; right: 18px; bottom: 14px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
     .map-source { padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--dim); background: rgba(9,13,18,.88); font: 9px/1.4 var(--mono); text-decoration: none; }
     .map-source:hover { color: var(--mint); border-color: var(--mint); }
@@ -339,7 +344,7 @@
             <p class="map-help" id="districtSummary"></p>
             <input class="school-search" id="schoolSearch" type="search" autocomplete="off" placeholder="이 지역 학교 찾기" aria-label="선택 지역 학교 검색" />
             <div class="school-list" id="schoolList"></div>
-            <div class="school-people" id="schoolPeople"><p class="map-help">지도 점이나 학교명을 선택하면 현재 확인 인원이 나타납니다.</p></div>
+            <div class="school-people" id="schoolPeople"><p class="map-help">지도에서 학교 이름을 선택하면 현재 확인 인원이 나타납니다.</p></div>
           </div>
         </div>
       </aside>
@@ -443,6 +448,7 @@
     let activeView = "people";
     let selectedDistrict = "";
     let selectedSchoolId = "";
+    let schoolLabelLayoutFrame = 0;
 
     function escapeHtml(value) {
       return String(value ?? "").replace(/[&<>\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" })[char]);
@@ -725,6 +731,83 @@
       renderDistrictMap(district, mappedSchools());
     }
 
+    function shortSchoolName(value) {
+      return String(value || "")
+        .replace(/경상국립대학교\s*사범대학\s*부설/g, "경상국립대사대부")
+        .replace(/공업고등학교/g, "공고")
+        .replace(/여자고등학교/g, "여고")
+        .replace(/여자중학교/g, "여중")
+        .replace(/초등학교/g, "초")
+        .replace(/중학교/g, "중")
+        .replace(/고등학교/g, "고")
+        .replace(/분교장$/g, "분교")
+        .replace(/학교$/g, "");
+    }
+
+    function overlappingArea(rect, placed) {
+      return placed.reduce((sum, other) => {
+        const width = Math.max(0, Math.min(rect.right, other.right + 3) - Math.max(rect.left, other.left - 3));
+        const height = Math.max(0, Math.min(rect.bottom, other.bottom + 3) - Math.max(rect.top, other.top - 3));
+        return sum + width * height;
+      }, 0);
+    }
+
+    function layoutSchoolLabels() {
+      cancelAnimationFrame(schoolLabelLayoutFrame);
+      schoolLabelLayoutFrame = requestAnimationFrame(() => {
+        const map = $("#districtMap");
+        if (!map || map.hidden) return;
+        const width = map.clientWidth, height = map.clientHeight;
+        if (!width || !height) return;
+        const labels = [...map.querySelectorAll(".school-label")].sort((a, b) => Number(a.dataset.pointY) - Number(b.dataset.pointY) || Number(a.dataset.pointX) - Number(b.dataset.pointX));
+        const leaders = $("#schoolLeaders");
+        leaders.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        const placed = [];
+        const minX = 5, maxX = width - 5, minY = Math.max(68, height * .12), maxY = height - 43;
+        const verticalOrder = [0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7, -8, 8];
+
+        for (const label of labels) {
+          const pointX = Number(label.dataset.pointX) * width / 100;
+          const pointY = Number(label.dataset.pointY) * height / 100;
+          const labelWidth = label.offsetWidth, labelHeight = label.offsetHeight;
+          const candidates = [];
+          for (let column = 0; column < 3; column++) {
+            for (const level of verticalOrder) {
+              const vertical = level * (labelHeight + 3);
+              candidates.push({ left: pointX + 6 + column * (labelWidth + 7), top: pointY - labelHeight / 2 + vertical });
+              candidates.push({ left: pointX - labelWidth - 6 - column * (labelWidth + 7), top: pointY - labelHeight / 2 + vertical });
+            }
+          }
+          candidates.push({ left: pointX - labelWidth / 2, top: pointY - labelHeight - 7 });
+          candidates.push({ left: pointX - labelWidth / 2, top: pointY + 7 });
+
+          let best = null;
+          for (const candidate of candidates) {
+            const left = Math.max(minX, Math.min(candidate.left, maxX - labelWidth));
+            const top = Math.max(minY, Math.min(candidate.top, maxY - labelHeight));
+            const rect = { left, top, right: left + labelWidth, bottom: top + labelHeight };
+            const overlap = overlappingArea(rect, placed);
+            const distance = Math.hypot(left + labelWidth / 2 - pointX, top + labelHeight / 2 - pointY);
+            const score = overlap * 10000 + distance;
+            if (!best || score < best.score) best = { ...rect, score };
+            if (overlap === 0 && distance < labelWidth + labelHeight) break;
+          }
+          placed.push(best);
+          label.style.left = `${best.left}px`;
+          label.style.top = `${best.top}px`;
+          label.classList.add("ready");
+
+          const line = leaders.querySelector(`[data-line-id="${label.dataset.schoolId}"]`);
+          if (line) {
+            const endX = Math.max(best.left, Math.min(pointX, best.right));
+            const endY = Math.max(best.top, Math.min(pointY, best.bottom));
+            line.setAttribute("x1", pointX.toFixed(1)); line.setAttribute("y1", pointY.toFixed(1));
+            line.setAttribute("x2", endX.toFixed(1)); line.setAttribute("y2", endY.toFixed(1));
+          }
+        }
+      });
+    }
+
     function renderDistrictMap(district, schools) {
       const local = schools.filter((school) => school.district === district);
       const peopleCount = local.reduce((sum, school) => sum + school.currentPeople.length, 0);
@@ -736,7 +819,7 @@
       $("#districtTitle").textContent = district;
       $("#districtSummary").textContent = `현재 자료와 연결된 학교 ${local.length}곳 · 확인 인원 ${peopleCount}명`;
       $("#mapDistrictName").textContent = `${district} 학교 위치`;
-      $("#mapDistrictCount").textContent = `${local.length}개 학교 · 점을 누르면 근무자가 표시됩니다.`;
+      $("#mapDistrictCount").textContent = `${local.length}개 학교 · 학교 이름을 누르면 근무자가 표시됩니다.`;
       $("#mapSideMeta").textContent = `${local.length} SCHOOLS`;
       $("#mapPanelMeta").textContent = `${district} · COORDINATE VIEW`;
 
@@ -746,11 +829,13 @@
       const bounds = boundaryFeature ? geometryBounds([boundaryFeature]) : { minLat: Math.min(...lats), maxLat: Math.max(...lats), minLon: Math.min(...lons), maxLon: Math.max(...lons) };
       const project = createMapProjection(bounds, 100, 100, { left: 7, right: 7, top: 14, bottom: 10 });
       $("#districtBoundary").innerHTML = boundaryFeature ? `<svg class="boundary-svg district-boundary" viewBox="0 0 100 100" aria-hidden="true"><path d="${boundaryPath(boundaryFeature.polygons, project)}"></path></svg>` : "";
-      $("#schoolPins").innerHTML = local.map((school) => {
+      const markerData = local.map((school) => {
         const point = project(school.lon, school.lat);
-        return `<button class="school-pin${school.id === selectedSchoolId ? " active" : ""}" type="button" data-school-id="${escapeHtml(school.id)}" data-label="${escapeHtml(school.name)} · ${school.currentPeople.length}명" style="--x:${point.x.toFixed(2)}%;--y:${point.y.toFixed(2)}%" aria-label="${escapeHtml(school.name)}, 현재 확인 인원 ${school.currentPeople.length}명"></button>`;
-      }).join("");
-      $("#schoolPins").querySelectorAll("[data-school-id]").forEach((button) => button.addEventListener("click", () => selectSchool(button.dataset.schoolId)));
+        return { school, point };
+      });
+      $("#schoolPins").innerHTML = `<svg class="school-leaders" id="schoolLeaders" aria-hidden="true">${markerData.map(({ school }) => `<line class="school-leader${school.id === selectedSchoolId ? " active" : ""}" data-line-id="${escapeHtml(school.id)}"></line>`).join("")}</svg>${markerData.map(({ school, point }) => `<span class="school-dot${school.id === selectedSchoolId ? " active" : ""}" data-school-id="${escapeHtml(school.id)}" style="--x:${point.x.toFixed(2)}%;--y:${point.y.toFixed(2)}%" aria-hidden="true"></span><button class="school-label${school.id === selectedSchoolId ? " active" : ""}" type="button" data-school-id="${escapeHtml(school.id)}" data-point-x="${point.x.toFixed(3)}" data-point-y="${point.y.toFixed(3)}" title="${escapeHtml(school.name)}" aria-label="${escapeHtml(school.name)}, 현재 확인 인원 ${school.currentPeople.length}명">${escapeHtml(shortSchoolName(school.name))}</button>`).join("")}`;
+      $("#schoolPins").querySelectorAll(".school-label").forEach((button) => button.addEventListener("click", () => selectSchool(button.dataset.schoolId)));
+      layoutSchoolLabels();
       renderSchoolList(local);
       renderSchoolPeople(local.find((school) => school.id === selectedSchoolId));
     }
@@ -758,7 +843,7 @@
     function renderSchoolList(localSchools = mappedSchools().filter((school) => school.district === selectedDistrict)) {
       const query = $("#schoolSearch").value.trim().toLocaleLowerCase("ko");
       const visible = localSchools.filter((school) => !query || school.name.toLocaleLowerCase("ko").includes(query));
-      $("#schoolList").innerHTML = visible.length ? visible.map((school) => `<button class="school-row${school.id === selectedSchoolId ? " active" : ""}" type="button" data-school-id="${escapeHtml(school.id)}"><strong>${escapeHtml(school.name)}</strong><span>${school.currentPeople.length}명</span></button>`).join("") : `<div class="empty-list">이 지역에서 학교를 찾지 못했습니다.</div>`;
+      $("#schoolList").innerHTML = visible.length ? visible.map((school) => `<button class="school-row${school.id === selectedSchoolId ? " active" : ""}" type="button" data-school-id="${escapeHtml(school.id)}" title="${escapeHtml(school.name)}"><strong>${escapeHtml(shortSchoolName(school.name))}</strong><span>${school.currentPeople.length}명</span></button>`).join("") : `<div class="empty-list">이 지역에서 학교를 찾지 못했습니다.</div>`;
       $("#schoolList").querySelectorAll("[data-school-id]").forEach((button) => button.addEventListener("click", () => selectSchool(button.dataset.schoolId)));
     }
 
@@ -766,13 +851,14 @@
       selectedSchoolId = schoolId;
       const local = mappedSchools().filter((school) => school.district === selectedDistrict);
       document.querySelectorAll("[data-school-id]").forEach((button) => button.classList.toggle("active", button.dataset.schoolId === schoolId));
+      document.querySelectorAll("[data-line-id]").forEach((line) => line.classList.toggle("active", line.dataset.lineId === schoolId));
       renderSchoolList(local);
       renderSchoolPeople(local.find((school) => school.id === schoolId));
     }
 
     function renderSchoolPeople(school) {
       if (!school) {
-        $("#schoolPeople").innerHTML = `<p class="map-help">지도 점이나 학교명을 선택하면 현재 확인 인원이 나타납니다.</p>`;
+        $("#schoolPeople").innerHTML = `<p class="map-help">지도에서 학교 이름을 선택하면 현재 확인 인원이 나타납니다.</p>`;
         return;
       }
       $("#schoolPeople").innerHTML = `<h3>${escapeHtml(school.name)}</h3><p class="school-address">${escapeHtml(school.address)}<br>${escapeHtml(school.type)} · 현재 확인 ${school.currentPeople.length}명</p>${school.currentPeople.map(({ person }) => `<button class="map-person" type="button" data-person-name="${escapeHtml(person.name)}"><strong>${escapeHtml(person.name)}</strong><span>${escapeHtml(person.currentRole)}</span></button>`).join("")}`;
@@ -871,6 +957,7 @@
     document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
     $("#mapBack").addEventListener("click", showProvinceMap);
     $("#schoolSearch").addEventListener("input", () => renderSchoolList());
+    window.addEventListener("resize", () => { if (selectedDistrict && activeView === "map") layoutSchoolLabels(); });
     $("#exportResults").addEventListener("click", exportVisibleCsv);
     $("#dataButton").addEventListener("click", () => $("#dataDialog").showModal());
     $("#sourceButton").addEventListener("click", () => $("#sourceDialog").showModal());
