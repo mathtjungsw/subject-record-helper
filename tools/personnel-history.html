@@ -329,12 +329,12 @@
 
     <section class="map-workspace" id="mapWorkspace" aria-label="지도 검색" hidden>
       <aside class="map-side-panel">
-        <div class="panel-head"><strong>지역 · 학교</strong><span id="mapSideMeta">18 DISTRICTS</span></div>
+        <div class="panel-head"><strong>지역 · 학교</strong><span id="mapSideMeta">20 MAP AREAS</span></div>
         <div class="map-side-scroll">
           <div id="mapIntro">
             <p class="map-kicker">GYEONGNAM MAP</p>
             <h2>시·군을 선택하세요</h2>
-            <p class="map-help">오른쪽 행정경계 지도나 아래 지역명을 누르면 해당 시·군의 실제 윤곽과 학교 위치가 확대됩니다. 지도에는 인사자료에서 현재 근무자가 확인된 학교만 표시됩니다.</p>
+            <p class="map-help">오른쪽 행정경계 지도나 아래 지역명을 누르면 해당 지역의 실제 윤곽과 학교 위치가 확대됩니다. 창원시는 창원·마산·진해로 나눠 표시합니다.</p>
             <div class="region-directory" id="regionDirectory"></div>
           </div>
           <div id="schoolBrowser" hidden>
@@ -435,7 +435,8 @@
       { name: "창녕", x: 55, y: 31 }, { name: "밀양", x: 70, y: 25 }, { name: "양산", x: 84, y: 24 },
       { name: "산청", x: 28, y: 43 }, { name: "의령", x: 45, y: 44 }, { name: "김해", x: 75, y: 43 },
       { name: "하동", x: 18, y: 58 }, { name: "진주", x: 36, y: 56 }, { name: "함안", x: 52, y: 52 },
-      { name: "창원", x: 65, y: 58 }, { name: "사천", x: 36, y: 70 }, { name: "고성", x: 52, y: 70 },
+      { name: "창원", x: 64, y: 55 }, { name: "마산", x: 58, y: 64 }, { name: "진해", x: 69, y: 66 },
+      { name: "사천", x: 36, y: 70 }, { name: "고성", x: 52, y: 70 },
       { name: "거제", x: 67, y: 82 }, { name: "통영", x: 48, y: 84 }, { name: "남해", x: 25, y: 82 }
     ];
     const $ = (selector) => document.querySelector(selector);
@@ -690,7 +691,7 @@
       if (features.length) {
         const bounds = geometryBounds(features);
         const project = createMapProjection(bounds, 1000, 620, { left: 52, right: 52, top: 32, bottom: 30 });
-        $("#provinceBoundaries").innerHTML = `<svg class="boundary-svg" viewBox="0 0 1000 620" role="img" aria-label="경상남도 18개 시군 행정경계 지도">${features.map((feature) => {
+        $("#provinceBoundaries").innerHTML = `<svg class="boundary-svg" viewBox="0 0 1000 620" role="img" aria-label="경상남도 지역 지도, 창원·마산·진해 구분">${features.map((feature) => {
           const stats = districtStats(feature.name, schools);
           const featureBounds = geometryBounds([feature]);
           const label = project((featureBounds.minLon + featureBounds.maxLon) / 2, (featureBounds.minLat + featureBounds.maxLat) / 2);
@@ -719,7 +720,7 @@
       $("#districtMap").hidden = true;
       $("#mapIntro").hidden = false;
       $("#schoolBrowser").hidden = true;
-      $("#mapSideMeta").textContent = "18 DISTRICTS";
+      $("#mapSideMeta").textContent = "20 MAP AREAS";
       $("#mapPanelMeta").textContent = "SCHEMATIC OVERVIEW";
       $("#schoolSearch").value = "";
     }

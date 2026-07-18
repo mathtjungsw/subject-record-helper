@@ -21,9 +21,9 @@ if (!mapData?.schools?.length) throw new Error("School map data is empty");
 const invalidCoordinates = mapData.schools.filter((school) => !Number.isFinite(school.lat) || !Number.isFinite(school.lon));
 if (invalidCoordinates.length) throw new Error(`Invalid coordinates: ${invalidCoordinates.length}`);
 const districts = new Set(mapData.schools.map((school) => school.district));
-if (districts.size !== 18) throw new Error(`Expected 18 districts, found ${districts.size}`);
+if (districts.size !== 20) throw new Error(`Expected 20 map areas, found ${districts.size}`);
 const boundaryData = context.window.GN_BOUNDARY_DATA;
-if (boundaryData?.features?.length !== 18) throw new Error(`Expected 18 boundary features, found ${boundaryData?.features?.length || 0}`);
+if (boundaryData?.features?.length !== 20) throw new Error(`Expected 20 boundary features, found ${boundaryData?.features?.length || 0}`);
 if (boundaryData.features.some((feature) => !feature.polygons.length || feature.polygons.some((ring) => ring.length < 4))) throw new Error("Invalid boundary geometry");
 
 console.log(JSON.stringify({ inlineScripts: inlineScripts.length, htmlIds: ids.length, districts: districts.size, boundaryPoints: boundaryData.stats.points, ...mapData.stats }));

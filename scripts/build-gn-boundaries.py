@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 DISTRICT_ORDER = (
-    "창원", "진주", "통영", "사천", "김해", "밀양", "거제", "양산",
+    "창원", "마산", "진해", "진주", "통영", "사천", "김해", "밀양", "거제", "양산",
     "의령", "함안", "창녕", "고성", "남해", "하동", "산청", "함양",
     "거창", "합천",
 )
@@ -101,6 +101,12 @@ def simplify_ring(points, tolerance: float):
 
 
 def district_name(raw_name: str) -> str:
+    if raw_name == "창원시":
+        return ""
+    if raw_name.startswith("창원시마산"):
+        return "마산"
+    if raw_name.startswith("창원시진해구"):
+        return "진해"
     if raw_name.startswith("창원시"):
         return "창원"
     return raw_name.removesuffix("시").removesuffix("군")

@@ -17,7 +17,7 @@ from pathlib import Path
 
 
 DISTRICTS = (
-    "창원", "진주", "통영", "사천", "김해", "밀양", "거제", "양산",
+    "창원", "마산", "진해", "진주", "통영", "사천", "김해", "밀양", "거제", "양산",
     "의령", "함안", "창녕", "고성", "남해", "하동", "산청", "함양",
     "거창", "합천",
 )
@@ -46,6 +46,12 @@ def load_personnel(path: Path) -> dict:
 
 
 def district_from_address(address: str) -> str:
+    if "창원시 마산합포구" in (address or "") or "창원시 마산회원구" in (address or ""):
+        return "마산"
+    if "창원시 진해구" in (address or ""):
+        return "진해"
+    if "창원시" in (address or ""):
+        return "창원"
     for district in DISTRICTS:
         if re.search(rf"\b{district}(?:시|군)\b", address or ""):
             return district
