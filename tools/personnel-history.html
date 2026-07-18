@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1016" />
+  <title>경남 중등 인사이력 · WORKBOX</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090d12;
+      --panel: #10161e;
+      --panel-2: #151d27;
+      --panel-3: #1b2531;
+      --line: #273442;
+      --line-hot: #42556a;
+      --text: #f2f5f7;
+      --muted: #94a2b1;
+      --dim: #657486;
+      --mint: #75e6b6;
+      --mint-soft: rgba(117, 230, 182, 0.12);
+      --amber: #f6c76e;
+      --amber-soft: rgba(246, 199, 110, 0.12);
+      --blue: #82b7ff;
+      --danger: #ff8f8f;
+      --radius: 16px;
+      --sans: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", Inter, system-ui, sans-serif;
+      --mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--bg); }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 82% -8%, rgba(117, 230, 182, 0.09), transparent 34rem),
+        radial-gradient(circle at -5% 95%, rgba(130, 183, 255, 0.07), transparent 31rem),
+        var(--bg);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select, textarea { color: inherit; font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+
+    .app { width: min(1480px, calc(100% - 32px)); margin: 0 auto; padding: 18px 0 30px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 42px; }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand-mark { width: 20px; height: 20px; border-radius: 6px; background: var(--mint); box-shadow: inset -6px -6px 0 rgba(0, 0, 0, 0.14); transform: rotate(-5deg); }
+    .brand-copy strong { display: block; font: 700 12px/1 var(--mono); letter-spacing: .14em; }
+    .brand-copy span { display: block; margin-top: 5px; color: var(--dim); font: 10px/1 var(--mono); }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .ghost-button, .solid-button, .danger-button {
+      min-height: 38px; padding: 0 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 13px; font-weight: 700;
+    }
+    .ghost-button:hover { border-color: var(--line-hot); background: var(--panel-2); }
+    .solid-button { border-color: var(--mint); color: #08120f; background: var(--mint); }
+    .danger-button { color: var(--danger); background: rgba(255, 143, 143, .07); }
+
+    .hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: end; margin: 46px 0 24px; }
+    .eyebrow { margin: 0 0 12px; color: var(--mint); font: 700 11px/1 var(--mono); letter-spacing: .16em; }
+    h1 { margin: 0; font-size: clamp(30px, 5vw, 58px); line-height: 1.02; letter-spacing: -.045em; }
+    .hero p { max-width: 760px; margin: 16px 0 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+    .coverage { min-width: 230px; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(16, 22, 30, .8); }
+    .coverage span { display: block; color: var(--dim); font: 10px/1 var(--mono); letter-spacing: .12em; }
+    .coverage strong { display: block; margin-top: 9px; font: 700 19px/1.2 var(--mono); }
+    .coverage small { display: block; margin-top: 7px; color: var(--muted); font-size: 11px; }
+
+    .search-panel { padding: 13px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(16, 22, 30, .92); box-shadow: 0 16px 60px rgba(0,0,0,.18); }
+    .search-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+    .search-box { position: relative; }
+    .search-box::before { content: "/"; position: absolute; left: 16px; top: 50%; translate: 0 -50%; color: var(--mint); font: 700 17px/1 var(--mono); }
+    .search-box input { width: 100%; height: 50px; padding: 0 46px; border: 1px solid transparent; border-radius: 12px; outline: none; background: var(--panel-2); font-size: 15px; }
+    .search-box input:focus { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(117,230,182,.09); }
+    .clear-search { position: absolute; right: 8px; top: 8px; width: 34px; height: 34px; border: 0; border-radius: 9px; color: var(--dim); background: transparent; }
+    .clear-search:hover { color: var(--text); background: var(--panel-3); }
+    .filters { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+    .filter-chip { min-height: 31px; padding: 0 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: transparent; font-size: 12px; }
+    .filter-chip:hover, .filter-chip.active { border-color: var(--mint); color: var(--mint); background: var(--mint-soft); }
+
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }
+    .stat { padding: 14px 16px; border: 1px solid var(--line); border-radius: 13px; background: rgba(16,22,30,.72); }
+    .stat span { color: var(--dim); font: 10px/1 var(--mono); letter-spacing: .1em; }
+    .stat strong { display: block; margin-top: 9px; font: 700 20px/1 var(--mono); }
+
+    .notice { display: flex; align-items: flex-start; gap: 10px; margin: 12px 0; padding: 11px 13px; border: 1px solid rgba(246,199,110,.26); border-radius: 12px; color: #dfc99c; background: var(--amber-soft); font-size: 12px; line-height: 1.55; }
+    .notice strong { color: var(--amber); white-space: nowrap; }
+
+    .workspace { display: grid; grid-template-columns: 390px minmax(0, 1fr); gap: 12px; min-height: 670px; }
+    .result-panel, .detail-panel { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(16,22,30,.88); overflow: hidden; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 50px; padding: 0 15px; border-bottom: 1px solid var(--line); }
+    .panel-head strong { font-size: 13px; }
+    .panel-head span { color: var(--dim); font: 11px/1 var(--mono); }
+    .result-list { height: 620px; overflow: auto; padding: 7px; }
+    .person-card { width: 100%; margin: 0 0 5px; padding: 13px; border: 1px solid transparent; border-radius: 12px; text-align: left; background: transparent; }
+    .person-card:hover { background: var(--panel-2); }
+    .person-card.active { border-color: rgba(117,230,182,.5); background: var(--mint-soft); }
+    .person-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .person-name { font-size: 15px; font-weight: 800; letter-spacing: -.015em; }
+    .role-badge { flex: 0 0 auto; padding: 5px 7px; border: 1px solid var(--line); border-radius: 7px; color: var(--blue); background: rgba(130,183,255,.08); font: 700 10px/1 var(--mono); }
+    .person-place { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .person-meta { display: flex; gap: 8px; margin-top: 8px; color: var(--dim); font: 10px/1 var(--mono); }
+    .empty-list { padding: 54px 20px; color: var(--muted); text-align: center; font-size: 13px; line-height: 1.7; }
+
+    .detail-scroll { height: 620px; overflow: auto; }
+    .empty-detail { display: grid; min-height: 620px; place-items: center; padding: 30px; color: var(--muted); text-align: center; line-height: 1.7; }
+    .detail-content { padding: clamp(20px, 4vw, 36px); }
+    .profile-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+    .profile-role { margin: 0 0 8px; color: var(--mint); font: 700 11px/1 var(--mono); letter-spacing: .12em; }
+    .profile-name { margin: 0; font-size: 34px; line-height: 1; letter-spacing: -.04em; }
+    .profile-sub { margin-top: 10px; color: var(--dim); font-size: 12px; }
+    .collision { max-width: 350px; padding: 9px 11px; border: 1px solid rgba(246,199,110,.26); border-radius: 10px; color: #dfc99c; background: var(--amber-soft); font-size: 11px; line-height: 1.55; }
+
+    .current-card { display: grid; grid-template-columns: 1fr auto; gap: 22px; margin: 24px 0 28px; padding: 22px; border: 1px solid rgba(117,230,182,.36); border-radius: 16px; background: linear-gradient(135deg, rgba(117,230,182,.12), rgba(130,183,255,.05)); }
+    .current-card span { color: var(--mint); font: 700 10px/1 var(--mono); letter-spacing: .12em; }
+    .current-card strong { display: block; margin-top: 12px; font-size: clamp(21px, 3vw, 30px); line-height: 1.25; letter-spacing: -.025em; }
+    .current-card small { display: block; margin-top: 9px; color: var(--muted); font-size: 12px; }
+    .current-date { align-self: center; color: var(--muted); font: 700 12px/1 var(--mono); white-space: nowrap; }
+
+    .section-title { display: flex; align-items: center; justify-content: space-between; margin: 0 0 14px; }
+    .section-title strong { font-size: 13px; }
+    .section-title span { color: var(--dim); font: 10px/1 var(--mono); }
+    .timeline { position: relative; margin-left: 7px; padding-left: 28px; }
+    .timeline::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 18px; width: 1px; background: var(--line-hot); }
+    .event { position: relative; padding: 0 0 25px; }
+    .event::before { content: ""; position: absolute; left: -28px; top: 5px; width: 9px; height: 9px; border: 2px solid var(--panel); border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 1px var(--mint); }
+    .event-date { color: var(--mint); font: 700 11px/1 var(--mono); }
+    .event-title { margin-top: 9px; font-size: 15px; font-weight: 800; }
+    .move { display: grid; grid-template-columns: minmax(0, 1fr) 25px minmax(0, 1fr); gap: 8px; align-items: center; margin-top: 9px; color: var(--muted); font-size: 12px; }
+    .move .arrow { color: var(--mint); text-align: center; }
+    .source-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+    .source-chip { max-width: 100%; padding: 5px 7px; border: 1px solid var(--line); border-radius: 7px; color: var(--dim); background: var(--panel-2); font: 10px/1.3 var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .source-chip:hover { color: var(--text); border-color: var(--line-hot); }
+    .event-note { margin-top: 8px; color: var(--dim); font-size: 11px; }
+    .custom-delete { margin-top: 9px; padding: 5px 8px; border: 1px solid rgba(255,143,143,.25); border-radius: 7px; color: var(--danger); background: transparent; font-size: 10px; }
+
+    dialog { width: min(860px, calc(100% - 26px)); max-height: calc(100vh - 30px); padding: 0; border: 1px solid var(--line-hot); border-radius: 18px; color: var(--text); background: var(--panel); box-shadow: 0 30px 100px rgba(0,0,0,.6); }
+    dialog::backdrop { background: rgba(2,5,8,.76); backdrop-filter: blur(6px); }
+    .modal-head { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; min-height: 58px; padding: 0 18px; border-bottom: 1px solid var(--line); background: var(--panel); }
+    .modal-head strong { font-size: 15px; }
+    .close-button { width: 34px; height: 34px; border: 0; border-radius: 9px; color: var(--muted); background: transparent; font-size: 19px; }
+    .close-button:hover { color: var(--text); background: var(--panel-2); }
+    .modal-body { max-height: calc(100vh - 90px); overflow: auto; padding: 18px; }
+    .modal-note { margin: 0 0 18px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); background: var(--panel-2); font-size: 12px; line-height: 1.65; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+    .field { display: grid; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { color: var(--muted); font-size: 11px; font-weight: 700; }
+    .field input, .field select, .field textarea { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; outline: none; background: #0d131a; }
+    .field textarea { min-height: 150px; resize: vertical; font: 12px/1.55 var(--mono); }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--mint); }
+    .form-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .divider { height: 1px; margin: 24px 0; background: var(--line); }
+    .subhead { margin: 0 0 12px; font-size: 14px; }
+    .source-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .source-table th, .source-table td { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .source-table th { color: var(--dim); font: 700 9px/1 var(--mono); letter-spacing: .08em; }
+    .source-table td:first-child { max-width: 480px; word-break: break-all; }
+
+    .toast { position: fixed; right: 18px; bottom: 18px; z-index: 20; max-width: min(420px, calc(100% - 36px)); padding: 12px 14px; border: 1px solid var(--line-hot); border-radius: 11px; color: var(--text); background: var(--panel-3); box-shadow: 0 14px 45px rgba(0,0,0,.4); font-size: 12px; opacity: 0; translate: 0 12px; pointer-events: none; transition: .18s ease; }
+    .toast.show { opacity: 1; translate: 0 0; }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .coverage { min-width: 0; }
+      .workspace { grid-template-columns: 1fr; }
+      .result-list { height: 330px; }
+      .detail-scroll, .empty-detail { height: auto; min-height: 520px; }
+    }
+    @media (max-width: 620px) {
+      .app { width: min(100% - 20px, 1480px); padding-top: 10px; }
+      .topbar { align-items: flex-start; }
+      .top-actions { flex-direction: column; align-items: stretch; }
+      .top-actions button { min-height: 34px; padding: 0 10px; font-size: 11px; }
+      .hero { margin-top: 34px; }
+      .search-row { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .profile-head, .current-card { grid-template-columns: 1fr; }
+      .profile-head { display: grid; }
+      .move { grid-template-columns: 1fr; }
+      .move .arrow { text-align: left; rotate: 90deg; width: 14px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <a class="brand" href="../index.html" aria-label="WORKBOX로 돌아가기">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-copy"><strong>WORKBOX</strong><span>PERSONNEL HISTORY</span></span>
+      </a>
+      <div class="top-actions">
+        <button class="ghost-button" id="sourceButton" type="button">자료 현황</button>
+        <button class="solid-button" id="dataButton" type="button">+ 자료 추가</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <p class="eyebrow">GYEONGNAM SECONDARY PERSONNEL</p>
+        <h1>경남 중등 인사이력</h1>
+        <p>수학교사와 교감·교장·장학사·장학관·기관장의 최근 발령지와 이전 근무지를 이름 하나로 찾아봅니다. 제공된 인사 발표 자료만 사용하며, 직접 추가한 기록은 이 브라우저에만 저장됩니다.</p>
+      </div>
+      <div class="coverage">
+        <span>DATA COVERAGE</span>
+        <strong id="coverageDates">불러오는 중…</strong>
+        <small id="coverageSources">자료 확인 중</small>
+      </div>
+    </section>
+
+    <section class="search-panel" aria-label="인사 검색">
+      <div class="search-row">
+        <div class="search-box">
+          <input id="searchInput" type="search" autocomplete="off" placeholder="이름, 학교, 교육지원청으로 검색" aria-label="이름 또는 근무지 검색" />
+          <button class="clear-search" id="clearSearch" type="button" aria-label="검색어 지우기">×</button>
+        </div>
+        <button class="ghost-button" id="exportResults" type="button">검색결과 CSV</button>
+      </div>
+      <div class="filters" id="roleFilters" aria-label="직위 필터"></div>
+    </section>
+
+    <section class="stats" aria-label="자료 통계">
+      <div class="stat"><span>PEOPLE</span><strong id="peopleStat">0</strong></div>
+      <div class="stat"><span>MOVES</span><strong id="recordsStat">0</strong></div>
+      <div class="stat"><span>MATH</span><strong id="mathStat">0</strong></div>
+      <div class="stat"><span>CUSTOM</span><strong id="customStat">0</strong></div>
+    </section>
+
+    <div class="notice">
+      <strong>읽는 법</strong>
+      <span>‘현재’는 실제 재직자 명부가 아니라 <b>제공 자료에서 확인되는 가장 최근 신임지</b>입니다. 이후 이동 자료가 없으면 실제 현 근무지와 다를 수 있으며, 동명이인은 한 화면에 함께 나타날 수 있습니다.</span>
+    </div>
+
+    <section class="workspace">
+      <aside class="result-panel" aria-label="검색 결과">
+        <div class="panel-head"><strong>사람 목록</strong><span id="resultCount">0 RESULT</span></div>
+        <div class="result-list" id="resultList"></div>
+      </aside>
+      <section class="detail-panel" aria-label="인사 이력 상세">
+        <div class="panel-head"><strong>근무 이력</strong><span id="detailMeta">SELECT A PERSON</span></div>
+        <div class="detail-scroll" id="detailView"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="dataDialog">
+    <div class="modal-head"><strong>자료 추가 · 백업</strong><button class="close-button" type="button" data-close="dataDialog" aria-label="닫기">×</button></div>
+    <div class="modal-body">
+      <p class="modal-note">매년 3월·9월 자료를 반영할 때는 PDF/HWP 원본을 Codex에 다시 주면 기본 자료 파일을 갱신할 수 있습니다. 급한 한두 건은 아래에서 직접 추가하고, 여러 건은 CSV를 붙여넣으세요. 직접 추가한 내용은 원본 자료와 구분되어 이 기기에만 저장됩니다.</p>
+      <h2 class="subhead">한 건 직접 추가</h2>
+      <form id="recordForm">
+        <div class="form-grid">
+          <div class="field"><label for="recordDate">기준일</label><input id="recordDate" type="date" required /></div>
+          <div class="field"><label for="recordName">성명</label><input id="recordName" required placeholder="홍길동" /></div>
+          <div class="field"><label for="recordRole">신임 직위</label><select id="recordRole"><option>수학교사</option><option>교감</option><option>교장</option><option>장학사</option><option>장학관</option><option>기관장</option></select></div>
+          <div class="field"><label for="recordFromRole">이전 직위</label><select id="recordFromRole"><option>수학교사</option><option>교사</option><option>교감</option><option>교장</option><option>장학사</option><option>장학관</option><option>기관장</option></select></div>
+          <div class="field"><label for="recordTo">신임지</label><input id="recordTo" required placeholder="○○중학교" /></div>
+          <div class="field"><label for="recordFrom">현임지(이전 근무지)</label><input id="recordFrom" placeholder="△△중학교" /></div>
+          <div class="field full"><label for="recordNote">비고</label><input id="recordNote" placeholder="전보, 승진 등" /></div>
+        </div>
+        <div class="form-actions"><button class="solid-button" type="submit">기록 저장</button></div>
+      </form>
+
+      <div class="divider"></div>
+      <h2 class="subhead">CSV 여러 건 추가</h2>
+      <div class="field full">
+        <label for="csvInput">첫 줄 형식: 기준일,성명,신임직위,이전직위,신임지,현임지,과목,비고</label>
+        <textarea id="csvInput" spellcheck="false" placeholder="2026-09-01,홍길동,교감,수학교사,○○중학교,△△중학교,수학,승진"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="solid-button" id="importCsv" type="button">CSV 추가</button>
+        <button class="ghost-button" id="downloadSample" type="button">입력 양식 다운로드</button>
+      </div>
+
+      <div class="divider"></div>
+      <h2 class="subhead">이 기기의 직접 입력 자료</h2>
+      <div class="form-actions">
+        <button class="ghost-button" id="backupCustom" type="button">JSON 백업</button>
+        <button class="ghost-button" id="restoreCustom" type="button">JSON 불러오기</button>
+        <button class="danger-button" id="clearCustom" type="button">직접 입력 전체 삭제</button>
+        <input id="restoreFile" type="file" accept="application/json,.json" hidden />
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="sourceDialog">
+    <div class="modal-head"><strong>반영 자료 현황</strong><button class="close-button" type="button" data-close="sourceDialog" aria-label="닫기">×</button></div>
+    <div class="modal-body">
+      <p class="modal-note" id="sourceSummary"></p>
+      <table class="source-table">
+        <thead><tr><th>기준일 · 파일</th><th>형식</th><th>반영</th></tr></thead>
+        <tbody id="sourceRows"></tbody>
+      </table>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./personnel-data.js"></script>
+  <script>
+    const BASE = window.GN_PERSONNEL_DATA || { records: [], sources: [], failures: [], stats: {} };
+    const STORAGE_KEY = "workbox.gnPersonnel.custom.v1";
+    const roles = ["전체", "수학교사", "교감", "교장", "장학사", "장학관", "기관장"];
+    const $ = (selector) => document.querySelector(selector);
+    const formatNumber = (value) => Number(value || 0).toLocaleString("ko-KR");
+    let activeRole = "전체";
+    let selectedName = "";
+    let customRecords = readCustom();
+    let people = [];
+    let filteredPeople = [];
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" })[char]);
+    }
+
+    function readCustom() {
+      try {
+        const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        return Array.isArray(value) ? value : [];
+      } catch (_) { return []; }
+    }
+
+    function writeCustom() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(customRecords));
+    }
+
+    function allRecords() {
+      return [...BASE.records, ...customRecords].filter((record) => record && record.name && record.date);
+    }
+
+    function normalizePlace(value) {
+      return String(value || "")
+        .replace("경상남도", "")
+        .replace(/\[[^\]]+\]/g, "")
+        .replace(/교육지원청.*$/, "교육지원청")
+        .replace(/[\s().·․_-]/g, "");
+    }
+
+    function buildPeople() {
+      const groups = new Map();
+      for (const record of allRecords()) {
+        if (!groups.has(record.name)) groups.set(record.name, []);
+        groups.get(record.name).push(record);
+      }
+      people = [...groups].map(([name, history]) => {
+        history.sort((a, b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
+        const latestDate = history[0]?.date || "";
+        const latestSet = history.filter((item) => item.date === latestDate);
+        const current = latestSet[0] || {};
+        const currentRole = current.toRole || current.fromRole || "직위 미상";
+        const places = new Set(latestSet.map((item) => normalizePlace(item.to)).filter(Boolean));
+        const collision = places.size > 1 || latestSet.length > 2;
+        const haystack = [name, ...history.flatMap((item) => [item.from, item.to, item.fromRole, item.toRole, item.subject])].join(" ").toLocaleLowerCase("ko");
+        return { name, history, latestDate, current, currentRole, collision, haystack };
+      }).sort((a, b) => a.name.localeCompare(b.name, "ko"));
+      updateStats();
+      applyFilters();
+    }
+
+    function updateStats() {
+      const records = allRecords();
+      $("#peopleStat").textContent = formatNumber(people.length);
+      $("#recordsStat").textContent = formatNumber(records.length);
+      $("#mathStat").textContent = formatNumber(records.filter((item) => item.toRole === "수학교사").length);
+      $("#customStat").textContent = formatNumber(customRecords.length);
+    }
+
+    function applyFilters() {
+      const query = $("#searchInput").value.trim().toLocaleLowerCase("ko");
+      filteredPeople = people.filter((person) => {
+        const roleMatch = activeRole === "전체" || person.currentRole === activeRole || person.history.some((item) => item.toRole === activeRole || item.fromRole === activeRole);
+        return roleMatch && (!query || person.haystack.includes(query));
+      });
+      renderPeople();
+      if (selectedName && !filteredPeople.some((person) => person.name === selectedName)) selectedName = "";
+      if (!selectedName && filteredPeople.length) selectedName = filteredPeople[0].name;
+      renderDetail();
+    }
+
+    function renderFilters() {
+      $("#roleFilters").innerHTML = roles.map((role) => `<button class="filter-chip${role === activeRole ? " active" : ""}" type="button" data-role="${role}">${role}</button>`).join("");
+      $("#roleFilters").querySelectorAll("button").forEach((button) => button.addEventListener("click", () => {
+        activeRole = button.dataset.role;
+        renderFilters();
+        applyFilters();
+      }));
+    }
+
+    function renderPeople() {
+      $("#resultCount").textContent = `${formatNumber(filteredPeople.length)} RESULT`;
+      if (!filteredPeople.length) {
+        $("#resultList").innerHTML = `<div class="empty-list">조건에 맞는 사람이 없습니다.<br>이름의 일부나 이전 근무지로 다시 찾아보세요.</div>`;
+        return;
+      }
+      $("#resultList").innerHTML = filteredPeople.map((person) => `
+        <button class="person-card${person.name === selectedName ? " active" : ""}" type="button" data-name="${escapeHtml(person.name)}">
+          <span class="person-top"><span class="person-name">${escapeHtml(person.name)}${person.collision ? " ·" : ""}</span><span class="role-badge">${escapeHtml(person.currentRole)}</span></span>
+          <span class="person-place">${escapeHtml(person.current.to || "신임지 미기재")}</span>
+          <span class="person-meta"><span>${escapeHtml(formatDate(person.latestDate))}</span><span>${person.history.length}건</span></span>
+        </button>`).join("");
+      $("#resultList").querySelectorAll(".person-card").forEach((button) => button.addEventListener("click", () => {
+        selectedName = button.dataset.name;
+        renderPeople();
+        renderDetail();
+      }));
+    }
+
+    function formatDate(value) {
+      if (!value) return "날짜 미상";
+      const [year, month, day] = value.split("-");
+      return `${year}.${month}.${day}.`;
+    }
+
+    function sourceFileUrl(source) {
+      if (!source?.file || source.file === "직접 입력") return "";
+      const root = "file:///N:/개인/자주 찾아보는 파일/중등인사발표/";
+      return encodeURI(root + source.file.replaceAll("\\", "/"));
+    }
+
+    function renderDetail() {
+      const person = people.find((item) => item.name === selectedName);
+      if (!person) {
+        $("#detailMeta").textContent = "SELECT A PERSON";
+        $("#detailView").innerHTML = `<div class="empty-detail">왼쪽에서 사람을 선택하면<br>최근 근무지와 이동 이력이 나타납니다.</div>`;
+        return;
+      }
+      $("#detailMeta").textContent = `${person.history.length} RECORD${person.history.length > 1 ? "S" : ""}`;
+      const oldest = person.history[person.history.length - 1];
+      const collisionNote = person.collision ? `<div class="collision"><b>동명이인 가능성</b><br>같은 기준일에 서로 다른 신임지가 있습니다. 근무지와 원문 출처를 함께 확인하세요.</div>` : "";
+      const historyHtml = person.history.map((record) => {
+        const sources = (record.sources || []).map((source) => {
+          const label = `${source.file}${source.page ? ` · ${source.page}쪽` : ""}`;
+          const url = sourceFileUrl(source);
+          return url ? `<a class="source-chip" href="${url}" title="원본 열기">${escapeHtml(label)}</a>` : `<span class="source-chip">${escapeHtml(label)}</span>`;
+        }).join("");
+        const customDelete = record.custom ? `<button class="custom-delete" type="button" data-delete-id="${escapeHtml(record.id)}">직접 입력 삭제</button>` : "";
+        return `<article class="event">
+          <div class="event-date">${escapeHtml(formatDate(record.date))}</div>
+          <div class="event-title">${escapeHtml(record.transition || `${record.fromRole || ""} → ${record.toRole || ""}` || "인사 발령")}</div>
+          <div class="move"><span>${escapeHtml(record.from || "이전 근무지 미기재")}<br><small>${escapeHtml(record.fromRole || "")}</small></span><span class="arrow">→</span><span>${escapeHtml(record.to || "신임지 미기재")}<br><small>${escapeHtml(record.toRole || "")}</small></span></div>
+          ${record.note ? `<div class="event-note">${escapeHtml(record.note)}</div>` : ""}
+          <div class="source-list">${sources}</div>${customDelete}
+        </article>`;
+      }).join("");
+      $("#detailView").innerHTML = `<div class="detail-content">
+        <div class="profile-head"><div><p class="profile-role">${escapeHtml(person.currentRole)}</p><h2 class="profile-name">${escapeHtml(person.name)}</h2><div class="profile-sub">제공 자료에서 확인된 이동 ${person.history.length}건</div></div>${collisionNote}</div>
+        <div class="current-card"><div><span>LATEST KNOWN WORKPLACE</span><strong>${escapeHtml(person.current.to || "신임지 미기재")}</strong><small>${escapeHtml(person.current.toRole || person.currentRole)} · 가장 최근 인사자료 기준</small></div><div class="current-date">${escapeHtml(formatDate(person.latestDate))}</div></div>
+        <div class="section-title"><strong>발령 이력</strong><span>NEWEST FIRST</span></div>
+        <div class="timeline">${historyHtml}${oldest?.from ? `<article class="event"><div class="event-date">자료 시작 이전</div><div class="event-title">${escapeHtml(oldest.from)}</div><div class="event-note">가장 오래된 자료의 현임지</div></article>` : ""}</div>
+      </div>`;
+      $("#detailView").querySelectorAll("[data-delete-id]").forEach((button) => button.addEventListener("click", () => deleteCustom(button.dataset.deleteId)));
+    }
+
+    function showToast(message) {
+      const toast = $("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 2400);
+    }
+
+    function createCustom(values) {
+      return {
+        id: `c${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+        custom: true,
+        date: values.date,
+        name: values.name.trim(),
+        subject: values.subject || (values.toRole === "수학교사" ? "수학" : ""),
+        from: values.from?.trim() || "",
+        to: values.to?.trim() || "",
+        fromRole: values.fromRole || values.toRole,
+        toRole: values.toRole,
+        transition: values.transition || `${values.fromRole || values.toRole} → ${values.toRole}`,
+        note: values.note?.trim() || "",
+        sources: [{ file: "직접 입력", page: null }]
+      };
+    }
+
+    function deleteCustom(id) {
+      if (!confirm("이 직접 입력 기록을 삭제할까요?")) return;
+      customRecords = customRecords.filter((item) => item.id !== id);
+      writeCustom();
+      buildPeople();
+      showToast("직접 입력 기록을 삭제했습니다.");
+    }
+
+    function parseCsv(text) {
+      const rows = [];
+      let row = [], cell = "", quoted = false;
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        if (char === '"' && quoted && text[i + 1] === '"') { cell += '"'; i++; }
+        else if (char === '"') quoted = !quoted;
+        else if (char === "," && !quoted) { row.push(cell.trim()); cell = ""; }
+        else if ((char === "\n" || char === "\r") && !quoted) {
+          if (char === "\r" && text[i + 1] === "\n") i++;
+          row.push(cell.trim()); cell = "";
+          if (row.some(Boolean)) rows.push(row); row = [];
+        } else cell += char;
+      }
+      row.push(cell.trim()); if (row.some(Boolean)) rows.push(row);
+      return rows;
+    }
+
+    function download(name, content, type = "text/plain;charset=utf-8") {
+      const blob = new Blob([content], { type });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob); link.download = name; link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
+
+    function csvEscape(value) {
+      const text = String(value ?? "");
+      return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+    }
+
+    function exportVisibleCsv() {
+      const header = ["성명", "최근직위", "최근근무지", "최근기준일", "확인이력수"];
+      const rows = filteredPeople.map((person) => [person.name, person.currentRole, person.current.to, person.latestDate, person.history.length]);
+      download(`경남중등인사_검색결과_${new Date().toISOString().slice(0,10)}.csv`, "\ufeff" + [header, ...rows].map((row) => row.map(csvEscape).join(",")).join("\r\n"), "text/csv;charset=utf-8");
+    }
+
+    function renderSources() {
+      const dates = (BASE.stats?.dates || []).map(formatDate);
+      $("#coverageDates").textContent = dates.length ? `${dates[0]} — ${dates[dates.length - 1]}` : "자료 없음";
+      $("#coverageSources").textContent = `${formatNumber(BASE.sources.length)}개 파일 · ${formatNumber(BASE.records.length)}건 반영`;
+      $("#sourceSummary").innerHTML = `제공 폴더의 PDF/HWP 중 <b>${formatNumber(BASE.sources.length)}개 파일</b>에서 범위에 해당하는 기록을 읽었습니다. 같은 발령이 도교육청·지역교육지원청 자료에 함께 있으면 한 건으로 합치고 출처를 모두 남겼습니다.${BASE.failures?.length ? ` 읽지 못한 파일 ${BASE.failures.length}개가 있어 다음 갱신 때 확인이 필요합니다.` : ""}`;
+      $("#sourceRows").innerHTML = [...BASE.sources].sort((a,b) => b.date.localeCompare(a.date) || a.file.localeCompare(b.file,"ko")).map((source) => `<tr><td><b>${escapeHtml(formatDate(source.date))}</b><br>${escapeHtml(source.file)}</td><td>${escapeHtml((source.type || "").toUpperCase())}${source.ocr ? " · OCR" : ""}</td><td>${formatNumber(source.records)}건</td></tr>`).join("");
+    }
+
+    $("#searchInput").addEventListener("input", applyFilters);
+    $("#clearSearch").addEventListener("click", () => { $("#searchInput").value = ""; applyFilters(); $("#searchInput").focus(); });
+    $("#exportResults").addEventListener("click", exportVisibleCsv);
+    $("#dataButton").addEventListener("click", () => $("#dataDialog").showModal());
+    $("#sourceButton").addEventListener("click", () => $("#sourceDialog").showModal());
+    document.querySelectorAll("[data-close]").forEach((button) => button.addEventListener("click", () => document.getElementById(button.dataset.close).close()));
+    document.querySelectorAll("dialog").forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
+
+    $("#recordForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const record = createCustom({
+        date: $("#recordDate").value, name: $("#recordName").value, toRole: $("#recordRole").value,
+        fromRole: $("#recordFromRole").value, to: $("#recordTo").value, from: $("#recordFrom").value,
+        note: $("#recordNote").value
+      });
+      customRecords.push(record); writeCustom(); selectedName = record.name; buildPeople();
+      event.target.reset(); $("#recordDate").value = new Date().toISOString().slice(0, 10);
+      showToast("인사 기록 1건을 저장했습니다.");
+    });
+
+    $("#importCsv").addEventListener("click", () => {
+      const rows = parseCsv($("#csvInput").value.trim());
+      if (!rows.length) return showToast("붙여넣은 CSV 내용이 없습니다.");
+      const start = /기준일|성명/.test(rows[0].join("")) ? 1 : 0;
+      const validRoles = new Set(roles.slice(1));
+      const added = [];
+      for (const row of rows.slice(start)) {
+        const [date, name, toRole, fromRole, to, from, subject, note] = row;
+        if (!/^20\d{2}-\d{2}-\d{2}$/.test(date || "") || !name || !validRoles.has(toRole) || !to) continue;
+        added.push(createCustom({ date, name, toRole, fromRole: fromRole || toRole, to, from, subject, note }));
+      }
+      if (!added.length) return showToast("형식에 맞는 행을 찾지 못했습니다.");
+      customRecords.push(...added); writeCustom(); selectedName = added[0].name; buildPeople(); $("#csvInput").value = "";
+      showToast(`${added.length}건을 추가했습니다.`);
+    });
+
+    $("#downloadSample").addEventListener("click", () => download("경남중등인사_입력양식.csv", "\ufeff기준일,성명,신임직위,이전직위,신임지,현임지,과목,비고\r\n2026-09-01,홍길동,교감,수학교사,○○중학교,△△중학교,수학,승진", "text/csv;charset=utf-8"));
+    $("#backupCustom").addEventListener("click", () => download(`경남중등인사_직접입력백업_${new Date().toISOString().slice(0,10)}.json`, JSON.stringify({ schemaVersion: 1, customRecords }, null, 2), "application/json"));
+    $("#restoreCustom").addEventListener("click", () => $("#restoreFile").click());
+    $("#restoreFile").addEventListener("change", async (event) => {
+      const file = event.target.files[0]; if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (!Array.isArray(data.customRecords)) throw new Error("invalid");
+        customRecords = data.customRecords; writeCustom(); buildPeople(); showToast(`${customRecords.length}건을 불러왔습니다.`);
+      } catch (_) { showToast("올바른 백업 JSON 파일이 아닙니다."); }
+      event.target.value = "";
+    });
+    $("#clearCustom").addEventListener("click", () => {
+      if (!customRecords.length) return showToast("삭제할 직접 입력 자료가 없습니다.");
+      if (!confirm(`직접 입력 ${customRecords.length}건을 모두 삭제할까요?`)) return;
+      customRecords = []; writeCustom(); buildPeople(); showToast("직접 입력 자료를 모두 삭제했습니다.");
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "/" && !["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName)) { event.preventDefault(); $("#searchInput").focus(); }
+      if (event.key === "Escape" && document.activeElement === $("#searchInput")) { $("#searchInput").value = ""; applyFilters(); $("#searchInput").blur(); }
+    });
+
+    $("#recordDate").value = new Date().toISOString().slice(0, 10);
+    renderFilters(); renderSources(); buildPeople();
+  </script>
+</body>
+</html>

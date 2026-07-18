@@ -6,3 +6,4 @@
 /.codex_work/
 /.tmp_ai_math/
 /tmp/
+__pycache__/
