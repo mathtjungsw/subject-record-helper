@@ -1,0 +1,2146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>나만의 교과세특 기재도우미</title>
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --panel: #fffdf8;
+      --panel-strong: #fff8ea;
+      --line: #ded7c9;
+      --text: #27231f;
+      --muted: #6c6258;
+      --brand: #2f6f62;
+      --brand-dark: #25584e;
+      --brand-soft: #e2f0ec;
+      --warn: #9a5b16;
+      --danger: #a23a33;
+      --ok: #28724b;
+      --shadow: 0 10px 24px rgba(42, 35, 25, .08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+      line-height: 1.5;
+    }
+    button, input, textarea, select { font: inherit; }
+    button {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--text);
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--brand); color: var(--brand-dark); }
+    button.primary { background: var(--brand); border-color: var(--brand); color: white; }
+    button.primary:hover { background: var(--brand-dark); color: white; }
+    button.danger { color: var(--danger); }
+    button.ghost { background: transparent; }
+    button.small { padding: 5px 8px; font-size: 12px; }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--text);
+      padding: 9px 10px;
+    }
+    textarea { resize: vertical; min-height: 88px; }
+    label { display: grid; gap: 6px; font-weight: 700; font-size: 13px; color: #39322c; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 253, 248, .94);
+      backdrop-filter: blur(8px);
+    }
+    .app-header h1 { margin: 0; font-size: 24px; letter-spacing: 0; }
+    .header-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
+    .autosave { color: var(--brand-dark); font-weight: 700; font-size: 13px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 330px minmax(0, 1fr);
+      gap: 18px;
+      padding: 18px;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+    aside, main { min-width: 0; }
+    .section, .student-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .section { padding: 18px; margin-bottom: 16px; }
+    .section h2, .student-panel h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .grid { display: grid; gap: 12px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .hint-box {
+      border: 1px solid #dfc990;
+      background: var(--panel-strong);
+      border-radius: 8px;
+      padding: 12px;
+      color: #584527;
+      font-size: 13px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: var(--brand-soft);
+      color: var(--brand-dark);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .badge.gray { background: #eee9df; color: #675e54; }
+    .badge.warn { background: #faedd8; color: var(--warn); }
+    .badge.ok { background: #dff0e8; color: var(--ok); }
+    .student-list { display: grid; gap: 8px; margin-top: 12px; }
+    .student-item {
+      width: 100%;
+      text-align: left;
+      display: grid;
+      gap: 5px;
+      border-radius: 8px;
+      background: #fff;
+      padding: 10px;
+      border: 1px solid var(--line);
+      cursor: pointer;
+    }
+    .student-item.active {
+      border-color: var(--brand);
+      background: var(--brand-soft);
+    }
+    .student-item strong { display: flex; justify-content: space-between; gap: 8px; }
+    .student-panel { overflow: hidden; }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 10px;
+      background: #ece6da;
+      border-bottom: 1px solid var(--line);
+    }
+    .tabs button {
+      border-color: transparent;
+      background: transparent;
+      font-weight: 800;
+      color: #5d554d;
+    }
+    .tabs button.active {
+      background: var(--panel);
+      border-color: var(--line);
+      color: var(--brand-dark);
+    }
+    .tab-content { padding: 18px; }
+    .step-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .preview {
+      max-height: 120px;
+      overflow: auto;
+      white-space: pre-wrap;
+      color: #403a34;
+      background: #faf7f0;
+      border-radius: 7px;
+      padding: 10px;
+      border: 1px solid #ece2d4;
+      font-size: 13px;
+    }
+    .drop-zone {
+      display: grid;
+      place-items: center;
+      min-height: 92px;
+      margin-top: 12px;
+      padding: 16px;
+      border: 2px dashed #c8bdad;
+      border-radius: 8px;
+      background: #fbf7ef;
+      color: var(--muted);
+      text-align: center;
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+    }
+    .drop-zone.dragging {
+      border-color: var(--brand);
+      background: var(--brand-soft);
+      color: var(--brand-dark);
+    }
+    .compact-tools {
+      margin: 12px 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffaf1;
+      padding: 10px 12px;
+    }
+    .compact-tools summary {
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--brand-dark);
+    }
+    .material-detail {
+      margin-top: 10px;
+    }
+    .material-detail summary {
+      cursor: pointer;
+      color: var(--brand-dark);
+      font-weight: 800;
+    }
+    .checks { display: grid; gap: 8px; }
+    .check-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+    }
+    .quick-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+    .footer-note {
+      max-width: 1500px;
+      margin: 0 auto 28px;
+      padding: 0 18px;
+    }
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 20;
+      display: none;
+      max-width: 360px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      background: #2d2a25;
+      box-shadow: var(--shadow);
+    }
+    .toast.show { display: block; }
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      color: var(--muted);
+      background: #fffaf1;
+      text-align: center;
+    }
+    .is-hidden { display: none !important; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .app-header { align-items: flex-start; flex-direction: column; }
+      .grid.two, .grid.three { grid-template-columns: 1fr; }
+    }
+    .workbox-home {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 1000;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 11px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 999px;
+      color: #f1f3f5;
+      background: rgba(15,17,20,.88);
+      box-shadow: 0 5px 16px rgba(0,0,0,.16);
+      backdrop-filter: blur(10px);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      text-decoration: none;
+      letter-spacing: .04em;
+    }
+    .workbox-home:hover { background: #171a1f; }
+    .workbox-home:focus-visible { outline: 3px solid rgba(201,255,99,.45); outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <a class="workbox-home" href="../index.html" aria-label="업무 도구 홈으로 돌아가기">← WORKBOX</a>
+  <header class="app-header">
+    <div>
+      <h1>나만의 교과세특 기재도우미</h1>
+      <div class="muted">학생 자료와 교사 평가를 바탕으로 ChatGPT에 붙여넣을 세특 작성 프롬프트를 만듭니다.</div>
+    </div>
+    <div class="header-actions">
+      <span id="autosaveStatus" class="autosave">자동 저장 준비됨</span>
+      <button id="downloadJsonBtn">세이브 파일 저장</button>
+      <button id="loadJsonBtn">세이브 파일 불러오기</button>
+      <input id="loadJsonInput" class="sr-only" type="file" accept="application/json,.json">
+      <button id="downloadTemplateBtn">입력 양식 다운로드</button>
+      <button id="downloadCsvBtn">CSV 다운로드</button>
+      <button id="downloadResultXlsxBtn">입력결과 엑셀 다운로드</button>
+      <button id="resetBtn" class="danger">임시저장 초기화</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <section class="section">
+        <div class="section-title">
+          <h2>1. 기본 설정</h2>
+          <button id="toggleSettingsBtn" class="small">기본설정 숨기기</button>
+        </div>
+        <div id="settingsPanel" class="grid">
+          <label>과목명
+            <input id="subjectInput" placeholder="예: 수학">
+          </label>
+          <div class="grid two">
+            <label>학년/반
+              <input id="classInput" placeholder="예: 2학년 3반">
+            </label>
+            <label>작성 글자 수 기준
+              <input id="lengthInput" placeholder="예: 500자 내외">
+            </label>
+          </div>
+          <label>작성 문체
+            <select id="styleSelect">
+              <option>기본형</option>
+              <option>자연스러운 생기부 문체</option>
+              <option>수학 교과 역량 강조</option>
+              <option>탐구활동 중심</option>
+              <option>발표·협업 중심</option>
+              <option>학습된 문체(내가 넣은 자료를 바탕으로 학습한 문체)</option>
+            </select>
+          </label>
+          <label>금지 조건
+            <textarea id="banInput" placeholder="예: 과장 금지, 근거 없는 칭찬 금지, 학생 자료에 없는 내용 추가 금지"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <h2>3. 학생 선택</h2>
+          <div class="row">
+            <span id="studentCount" class="badge gray">0명</span>
+            <button id="toggleStudentAddBtn" class="small">학생 추가 숨기기</button>
+            <button id="toggleStudentListBtn" class="small">학생 목록 숨기기</button>
+          </div>
+        </div>
+        <div id="studentAddPanel" class="grid">
+          <div class="grid two">
+            <input id="newStudentName" placeholder="이름">
+            <input id="newStudentNumber" placeholder="번호">
+          </div>
+          <input id="newStudentClass" placeholder="반">
+          <textarea id="newStudentMemo" placeholder="간단 메모"></textarea>
+          <button id="addStudentBtn" class="primary">학생 추가</button>
+          <details>
+            <summary><strong>명렬넣기</strong> <span class="muted">반, 번호, 이름, 간단메모를 여러 줄로 추가</span></summary>
+            <textarea id="rosterInput" style="margin-top:10px;" placeholder="예:&#10;2-3,1,김가람,탐구 활동 우수&#10;2-3	2	이도윤	발표 참여"></textarea>
+            <div class="row" style="margin-top:8px;">
+              <button id="importRosterBtn" class="primary">명렬 목록 추가</button>
+              <button id="uploadRosterBtn">명렬 파일 불러오기</button>
+              <input id="rosterFileInput" class="sr-only" type="file" accept=".xlsx,.xls,.csv,.tsv">
+            </div>
+            <p class="muted">첫 행에 반, 번호, 이름, 간단메모가 있으면 자동으로 인식합니다. 엑셀 파일은 브라우저 안에서만 읽습니다.</p>
+          </details>
+        </div>
+        <div id="studentList" class="student-list"></div>
+      </section>
+    </aside>
+
+    <main>
+      <section class="section">
+        <div class="section-title">
+          <h2>2. 참고 세특 사례</h2>
+          <div class="row">
+            <button id="toggleReferenceManageBtn" class="small">참고 사례 숨기기</button>
+            <button id="addReferenceBtn" class="primary">사례 추가</button>
+          </div>
+        </div>
+        <div id="referenceManagePanel">
+          <div class="hint-box">참고 사례는 세특 작성 문체와 표현 방식 참고용이며, 그대로 복사하지 않습니다.</div>
+          <label style="margin-top:12px;">새 참고 사례
+            <textarea id="referenceInput" placeholder="좋은 세특 사례를 붙여넣으세요."></textarea>
+          </label>
+          <div class="row" style="margin-top:10px;">
+            <button id="uploadReferenceBtn">사례 엑셀/CSV 불러오기</button>
+            <input id="referenceFileInput" class="sr-only" type="file" accept=".xlsx,.xls,.csv,.tsv">
+            <span class="muted">제목, 내용, 선택 열을 인식합니다. 내용 열만 있어도 추가됩니다.</span>
+          </div>
+          <div id="referenceCards"></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <strong>간단 문체 분석</strong>
+            <span class="badge">브라우저 분석</span>
+          </div>
+          <div id="referenceAnalysis" class="muted"></div>
+        </div>
+      </section>
+
+      <section class="student-panel">
+        <div class="tabs" id="tabs">
+          <button data-tab="profile" class="active">학생 정보</button>
+          <button data-tab="materials">4. 자료 입력</button>
+          <button data-tab="evaluation">5. 교사 평가</button>
+          <button data-tab="prompt">6. 프롬프트 생성</button>
+          <button data-tab="result">7. 세특 결과 저장</button>
+          <button id="nextStudentBtn" class="small">다음 학생</button>
+        </div>
+        <div id="tabContent" class="tab-content"></div>
+      </section>
+    </main>
+  </div>
+
+  <section class="footer-note">
+    <div class="hint-box">
+      <strong>개인정보 및 사용 안내</strong><br>
+      이 도구는 브라우저에서만 작동하며, 별도 서버에 자료를 저장하지 않습니다.<br>
+      다른 PC에서 이어서 작업하려면 세이브 파일을 다운로드한 뒤 옮겨서 불러오세요.<br>
+      PDF 업로드 시 텍스트 추출을 위해 PDF.js 라이브러리를 불러오며, 파일 내용은 외부 서버로 업로드하지 않습니다.<br>
+      PDF/이미지 OCR 시도 시 Tesseract.js와 한국어/영어 OCR 데이터를 불러오며, 인식 처리는 브라우저 안에서 진행됩니다.<br>
+      엑셀 업로드/양식 다운로드 시 SheetJS 라이브러리를 불러오며, 엑셀 내용은 브라우저 안에서만 처리됩니다.<br>
+      ChatGPT API 생성 기능을 사용하면 선택 학생 자료, 평가, 문체 분석이 OpenAI API로 전송되며 API 사용량은 별도 과금될 수 있습니다.<br>
+      AI 서비스에 붙여넣기 전 학생 이름, 학번 등 개인정보는 필요한 경우 비식별 처리해 주세요.<br>
+      생성된 세특은 반드시 교사가 최종 검토 후 사용하세요.
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const STORAGE_KEY = "subjectRecordHelper.v1";
+    const PDFJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    const PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    const TESSERACT_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+    const XLSX_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    const evaluationFields = [
+      ["participation", "수업 참여도"],
+      ["inquiry", "탐구 역량"],
+      ["thinking", "수학적 사고력"],
+      ["presentation", "발표 및 표현"],
+      ["collaboration", "협업 태도"],
+      ["growth", "성장 변화"],
+      ["improvement", "보완할 점"],
+      ["overall", "교사 종합 의견"]
+    ];
+    const quickTexts = [
+      "수업에 성실히 참여함",
+      "탐구 주제를 스스로 확장함",
+      "개념을 실제 상황과 연결하려는 태도가 돋보임",
+      "발표 과정에서 자신의 생각을 논리적으로 설명함",
+      "자료 정리와 분석 과정에서 꼼꼼함이 나타남"
+    ];
+    const evaluationExamples = {
+      participation: [
+        "수업 흐름을 놓치지 않고 성실히 참여함",
+        "질문과 답변 과정에 꾸준히 참여하며 개념 이해를 확인함",
+        "활동지 작성과 과제 수행에 안정적으로 임함",
+        "새로운 개념을 배울 때 필요한 내용을 메모하며 집중함",
+        "모둠 활동에서 맡은 역할을 책임감 있게 수행함"
+      ],
+      inquiry: [
+        "탐구 주제를 스스로 확장하여 추가 자료를 찾아봄",
+        "자료를 수집한 뒤 기준을 세워 비교하려는 태도가 나타남",
+        "궁금한 점을 질문으로 정리하고 해결 과정을 계획함",
+        "탐구 결과를 단순 나열하지 않고 원인과 의미를 해석하려 함",
+        "참고 자료를 자신의 탐구 목적에 맞게 선별해 활용함"
+      ],
+      thinking: [
+        "수학 개념을 실제 상황과 연결하려는 태도가 돋보임",
+        "식, 표, 그래프를 연결해 현상을 설명하려고 노력함",
+        "문제 상황에서 조건을 분석하고 필요한 개념을 찾아 적용함",
+        "계산 결과의 의미를 해석하며 자신의 판단 근거를 제시함",
+        "오류가 발생했을 때 풀이 과정을 되짚어 수정하려는 모습이 보임"
+      ],
+      presentation: [
+        "발표 과정에서 자신의 생각을 논리적으로 설명함",
+        "핵심 내용을 간결하게 정리해 청중이 이해하기 쉽게 전달함",
+        "시각 자료를 활용해 탐구 결과를 명확히 제시함",
+        "질문에 대해 자료와 근거를 바탕으로 차분히 답변함",
+        "피드백을 반영해 발표 내용과 표현을 보완함"
+      ],
+      collaboration: [
+        "모둠원의 의견을 경청하고 역할을 조율하려는 태도가 보임",
+        "공동 과제에서 필요한 자료를 나누어 정리하며 협력함",
+        "다른 학생의 의견을 자신의 설명과 연결해 활동을 발전시킴",
+        "갈등 상황에서 과제 해결을 우선하며 의견을 조정함",
+        "모둠 활동 결과가 완성되도록 꾸준히 기여함"
+      ],
+      growth: [
+        "초기에는 설명이 단편적이었으나 활동 후 근거를 들어 표현하는 모습이 향상됨",
+        "피드백을 반영해 자료 정리 방식과 발표 내용을 보완함",
+        "탐구 과정에서 자신의 부족한 부분을 인식하고 개선하려 함",
+        "개념 이해를 바탕으로 적용 범위를 점차 넓혀 가는 변화가 나타남",
+        "반복 활동을 통해 표현의 정확성과 논리성이 좋아짐"
+      ],
+      improvement: [
+        "탐구 결과의 근거를 조금 더 구체적으로 제시할 필요가 있음",
+        "자료 출처와 분석 기준을 명확히 정리하면 완성도가 높아질 것으로 보임",
+        "발표에서 핵심 용어를 더 정확히 사용하면 전달력이 향상될 수 있음",
+        "계산 결과뿐 아니라 그 의미를 해석하는 연습이 필요함",
+        "활동 과정을 단계별로 기록하면 자신의 사고 흐름이 더 잘 드러날 수 있음"
+      ],
+      overall: [
+        "자료 정리와 분석 과정에서 꼼꼼함이 나타남",
+        "탐구 과정과 발표 과정에서 성실한 학습 태도가 드러남",
+        "개념을 실제 사례와 연결하며 수학적 의미를 이해하려는 태도가 보임",
+        "활동 전반에서 자신의 생각을 근거와 함께 표현하려는 노력이 나타남",
+        "피드백을 수용하고 결과물을 보완하는 과정에서 성장 가능성이 확인됨"
+      ]
+    };
+
+    let appData = createDefaultData();
+    let activeTab = "profile";
+    let focusedEvaluationKey = "overall";
+    let saveTimer = null;
+    let isSettingsVisible = true;
+    let isStudentAddVisible = true;
+    let isStudentListVisible = true;
+    let isReferenceManageVisible = true;
+    let openaiApiKey = "";
+
+    function uid(prefix) {
+      return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function todayString() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      }[char]));
+    }
+
+    function createDefaultEvaluation() {
+      return Object.fromEntries(evaluationFields.map(([key]) => [key, ""]));
+    }
+
+    function createDefaultData() {
+      const sampleStudentId = uid("student");
+      return {
+        version: 1,
+        settings: {
+          subject: "수학",
+          className: "2학년 3반",
+          targetLength: "500자 내외",
+          style: "자연스러운 생기부 문체",
+          banned: "과장 금지, 근거 없는 칭찬 금지, 학생 자료에 없는 내용 추가 금지",
+          apiModel: "gpt-5.5",
+          compactApiPrompt: true,
+          includeReferenceInPrompt: true
+        },
+        references: [{
+          id: uid("ref"),
+          title: "샘플 참고 사례",
+          content: "함수의 그래프 변화에 관심을 갖고 모둠 활동에서 식과 그래프의 관계를 설명함. 자료를 정리하는 과정에서 핵심 개념을 자신의 말로 표현하려는 태도가 나타났으며, 발표 후 피드백을 반영해 설명을 보완함.",
+          selected: true
+        }],
+        students: [{
+          id: sampleStudentId,
+          name: "샘플 학생",
+          className: "2학년 3반",
+          number: "1",
+          memo: "샘플 데이터입니다. 필요 없으면 삭제하세요.",
+          materials: [{
+            id: uid("mat"),
+            title: "함수 탐구 보고서",
+            type: "보고서",
+            content: "일차함수와 이차함수의 그래프를 비교하고, 계수 변화가 그래프의 모양과 위치에 어떤 영향을 주는지 정리함. 실제 생활 속 예시를 찾아 함수식으로 표현하려고 시도함.",
+            selected: true
+          }],
+          evaluation: {
+            ...createDefaultEvaluation(),
+            participation: "수업에 성실히 참여함",
+            inquiry: "탐구 주제를 스스로 확장함",
+            thinking: "그래프와 식의 관계를 연결해 설명하려는 태도가 나타남",
+            overall: "자료 정리와 발표 준비 과정에서 꾸준함이 보임"
+          },
+          prompt: "",
+          result: ""
+        }],
+        selectedStudentId: sampleStudentId,
+        savedAt: null
+      };
+    }
+
+    function normalizeData(raw) {
+      const base = createDefaultData();
+      const data = raw && typeof raw === "object" ? raw : base;
+      data.settings = { ...base.settings, ...(data.settings || {}) };
+      data.references = Array.isArray(data.references) ? data.references : [];
+      data.students = Array.isArray(data.students) ? data.students : [];
+      data.references.forEach(ref => {
+        ref.id ||= uid("ref");
+        ref.title ||= "참고 사례";
+        ref.content ||= "";
+        ref.selected = ref.selected !== false;
+      });
+      data.students.forEach(student => {
+        student.id ||= uid("student");
+        student.name ||= "이름 없음";
+        student.className ||= "";
+        student.number ||= "";
+        student.memo ||= "";
+        student.materials = Array.isArray(student.materials) ? student.materials : [];
+        student.materials.forEach(material => {
+          material.id ||= uid("mat");
+          material.title ||= "자료";
+          material.type ||= "기타";
+          material.content ||= "";
+          material.selected = material.selected !== false;
+        });
+        student.evaluation = { ...createDefaultEvaluation(), ...(student.evaluation || {}) };
+        student.prompt ||= "";
+        student.result ||= "";
+      });
+      if (!data.students.some(student => student.id === data.selectedStudentId)) {
+        data.selectedStudentId = data.students[0]?.id || null;
+      }
+      return data;
+    }
+
+    function loadFromLocalStorage() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) appData = normalizeData(JSON.parse(saved));
+      } catch (error) {
+        showToast("저장된 데이터를 불러오지 못했습니다. 샘플 데이터로 시작합니다.");
+        appData = createDefaultData();
+      }
+    }
+
+    function persistNow() {
+      try {
+        appData.savedAt = new Date().toISOString();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        updateAutosaveStatus();
+      } catch (error) {
+        showToast("자동 저장에 실패했습니다. 브라우저 저장 공간을 확인해 주세요.");
+      }
+    }
+
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(persistNow, 250);
+    }
+
+    function updateAutosaveStatus() {
+      const el = document.getElementById("autosaveStatus");
+      if (!appData.savedAt) {
+        el.textContent = "자동 저장 준비됨";
+        return;
+      }
+      const time = new Date(appData.savedAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
+      el.textContent = `자동 저장됨 ${time}`;
+    }
+
+    function selectedStudent() {
+      return appData.students.find(student => student.id === appData.selectedStudentId) || null;
+    }
+
+    const tabSteps = [
+      ["profile", "학생 정보"],
+      ["materials", "자료 입력"],
+      ["evaluation", "교사 평가"],
+      ["prompt", "프롬프트 생성"],
+      ["result", "세특 결과 저장"]
+    ];
+
+    function renderStepFooter(tabKey) {
+      const currentIndex = tabSteps.findIndex(([key]) => key === tabKey);
+      if (currentIndex < 0) return "";
+      const nextStep = tabSteps[currentIndex + 1];
+      const label = nextStep ? `다음 단계: ${nextStep[1]}` : "다음 학생";
+      return `
+        <div class="step-footer">
+          <button class="primary" data-action="go-next-step">${label}</button>
+        </div>
+      `;
+    }
+
+    function saveCurrentTabDraft() {
+      const student = selectedStudent();
+      const resultText = document.getElementById("resultText");
+      if (student && resultText) {
+        student.result = resultText.value;
+        scheduleSave();
+      }
+    }
+
+    function goNextStep() {
+      const currentIndex = tabSteps.findIndex(([key]) => key === activeTab);
+      if (currentIndex < 0) return;
+      saveCurrentTabDraft();
+      const nextStep = tabSteps[currentIndex + 1];
+      if (!nextStep) {
+        focusNextStudent();
+        return;
+      }
+      activeTab = nextStep[0];
+      renderTab();
+      document.querySelector(".student-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function focusStudent(studentId, options = {}) {
+      if (!appData.students.some(student => student.id === studentId)) return;
+      appData.selectedStudentId = studentId;
+      activeTab = "profile";
+      renderAll();
+      scheduleSave();
+      if (options.scroll !== false) {
+        document.querySelector(".student-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    function focusNextStudent() {
+      if (!appData.students.length) {
+        showToast("이동할 학생이 없습니다.");
+        return;
+      }
+      const currentIndex = appData.students.findIndex(student => student.id === appData.selectedStudentId);
+      const nextIndex = currentIndex + 1;
+      if (nextIndex >= appData.students.length) {
+        showToast("마지막 학생입니다.");
+        return;
+      }
+      focusStudent(appData.students[nextIndex].id);
+      showToast(`${appData.students[nextIndex].name} 학생으로 이동했습니다.`);
+    }
+
+    function getStudentStatus(student) {
+      if (!student) return "자료 없음";
+      const selectedMaterialCount = student.materials.filter(item => item.selected && item.content.trim()).length;
+      const hasEvaluation = Object.values(student.evaluation || {}).some(value => String(value).trim());
+      if (student.result?.trim()) return "세특 작성 완료";
+      if (student.prompt?.trim()) return "프롬프트 생성 완료";
+      if (hasEvaluation) return "평가 입력 완료";
+      if (selectedMaterialCount > 0) return "자료 선택 완료";
+      return "자료 없음";
+    }
+
+    function renderAll() {
+      renderSettings();
+      renderReferences();
+      renderStudentList();
+      renderTab();
+      renderVisibilityToggles();
+      updateAutosaveStatus();
+    }
+
+    function renderVisibilityToggles() {
+      const studentList = document.getElementById("studentList");
+      const studentButton = document.getElementById("toggleStudentListBtn");
+      const settingsPanel = document.getElementById("settingsPanel");
+      const settingsButton = document.getElementById("toggleSettingsBtn");
+      const studentAddPanel = document.getElementById("studentAddPanel");
+      const studentAddButton = document.getElementById("toggleStudentAddBtn");
+      const referencePanel = document.getElementById("referenceManagePanel");
+      const referenceButton = document.getElementById("toggleReferenceManageBtn");
+      if (settingsPanel && settingsButton) {
+        settingsPanel.classList.toggle("is-hidden", !isSettingsVisible);
+        settingsButton.textContent = isSettingsVisible ? "기본설정 숨기기" : "기본설정 보이기";
+      }
+      if (studentAddPanel && studentAddButton) {
+        studentAddPanel.classList.toggle("is-hidden", !isStudentAddVisible);
+        studentAddButton.textContent = isStudentAddVisible ? "학생 추가 숨기기" : "학생 추가 보이기";
+      }
+      if (studentList && studentButton) {
+        studentList.classList.toggle("is-hidden", !isStudentListVisible);
+        studentButton.textContent = isStudentListVisible ? "학생 목록 숨기기" : "학생 목록 보이기";
+      }
+      if (referencePanel && referenceButton) {
+        referencePanel.classList.toggle("is-hidden", !isReferenceManageVisible);
+        referenceButton.textContent = isReferenceManageVisible ? "참고 사례 숨기기" : "참고 사례 보이기";
+      }
+    }
+
+    function renderSettings() {
+      document.getElementById("subjectInput").value = appData.settings.subject || "";
+      document.getElementById("classInput").value = appData.settings.className || "";
+      document.getElementById("lengthInput").value = appData.settings.targetLength || "";
+      document.getElementById("styleSelect").value = appData.settings.style || "기본형";
+      document.getElementById("banInput").value = appData.settings.banned || "";
+    }
+
+    function renderReferences() {
+      const container = document.getElementById("referenceCards");
+      container.innerHTML = appData.references.length ? appData.references.map(ref => `
+        <div class="card" data-ref-id="${escapeHtml(ref.id)}">
+          <div class="card-head">
+            <label style="display:flex; gap:8px; align-items:center; font-weight:800;">
+              <input type="checkbox" data-action="toggle-ref" ${ref.selected ? "checked" : ""} style="width:auto;">
+              ${escapeHtml(ref.title)}
+            </label>
+            <div class="row">
+              <button class="small" data-action="save-ref">수정</button>
+              <button class="small danger" data-action="delete-ref">삭제</button>
+            </div>
+          </div>
+          <input data-field="title" value="${escapeHtml(ref.title)}" aria-label="참고 사례 제목">
+          <textarea data-field="content" aria-label="참고 사례 내용">${escapeHtml(ref.content)}</textarea>
+        </div>
+      `).join("") : `<div class="empty">아직 참고 사례가 없습니다.</div>`;
+      document.getElementById("referenceAnalysis").innerHTML = analyzeReferences();
+    }
+
+    function analyzeReferences() {
+      const selected = appData.references.filter(ref => ref.selected && ref.content.trim());
+      if (!selected.length) return "선택된 참고 사례가 없어서 분석할 내용이 없습니다.";
+      const text = selected.map(ref => ref.content).join("\n");
+      const sentences = text.split(/[.!?。！？\n]+/).map(item => item.trim()).filter(Boolean);
+      const avgLength = sentences.length ? Math.round(sentences.reduce((sum, item) => sum + item.length, 0) / sentences.length) : 0;
+      const tokens = text.replace(/[^\w가-힣\s]/g, " ").split(/\s+/).filter(word => word.length >= 2);
+      const freq = {};
+      tokens.forEach(word => freq[word] = (freq[word] || 0) + 1);
+      const topWords = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([word]) => word).join(", ") || "확인 어려움";
+      const structure = text.includes("과정") || text.includes("활동") ? "활동 과정과 태도를 함께 서술하는 경향" : "관찰 내용 중심의 간결한 서술 경향";
+      const evaluationWords = ["돋보", "우수", "성실", "노력", "성장", "보완", "논리", "탐구"].filter(word => text.includes(word)).join(", ") || "직접 확인 필요";
+      return `
+        <div>문장 길이 경향: 평균 약 ${avgLength}자</div>
+        <div>자주 쓰이는 표현: ${escapeHtml(topWords)}</div>
+        <div>구성 방식: ${escapeHtml(structure)}</div>
+        <div>평가 표현의 특징: ${escapeHtml(evaluationWords)}</div>
+      `;
+    }
+
+    function renderStudentList() {
+      document.getElementById("studentCount").textContent = `${appData.students.length}명`;
+      const list = document.getElementById("studentList");
+      list.innerHTML = appData.students.length ? appData.students.map(student => `
+        <div class="student-item ${student.id === appData.selectedStudentId ? "active" : ""}" data-student-id="${escapeHtml(student.id)}">
+          <strong>
+            <span>${escapeHtml(student.name)}</span>
+            <span class="row">
+              <span>${escapeHtml(student.number)}번</span>
+              <button class="small danger" data-action="delete-student-list" title="학생 삭제">삭제</button>
+            </span>
+          </strong>
+          <span class="muted">${escapeHtml(student.className || appData.settings.className || "반 미입력")}</span>
+          <span class="badge ${getStudentStatus(student) === "세특 작성 완료" ? "ok" : "gray"}">${getStudentStatus(student)}</span>
+        </div>
+      `).join("") : `<div class="empty">학생을 추가해 주세요.</div>`;
+    }
+
+    function renderTab() {
+      document.querySelectorAll("#tabs button").forEach(button => {
+        button.classList.toggle("active", button.dataset.tab === activeTab);
+      });
+      const student = selectedStudent();
+      const content = document.getElementById("tabContent");
+      if (!student) {
+        content.innerHTML = `<div class="empty">학생을 선택하거나 새 학생을 추가해 주세요.</div>`;
+        return;
+      }
+      if (activeTab === "profile") content.innerHTML = renderProfileTab(student);
+      if (activeTab === "materials") content.innerHTML = renderMaterialsTab(student);
+      if (activeTab === "evaluation") content.innerHTML = renderEvaluationTab(student);
+      if (activeTab === "prompt") content.innerHTML = renderPromptTab(student);
+      if (activeTab === "result") content.innerHTML = renderResultTab(student);
+    }
+
+    function renderProfileTab(student) {
+      return `
+        <h2>학생 정보</h2>
+        <div class="grid two">
+          <label>이름<input data-profile="name" value="${escapeHtml(student.name)}"></label>
+          <label>번호<input data-profile="number" value="${escapeHtml(student.number)}"></label>
+          <label>반<input data-profile="className" value="${escapeHtml(student.className)}"></label>
+          <label>작성 상태<input value="${escapeHtml(getStudentStatus(student))}" readonly></label>
+        </div>
+        <label style="margin-top:12px;">간단 메모<textarea data-profile="memo">${escapeHtml(student.memo)}</textarea></label>
+        <div class="row" style="margin-top:12px;">
+          <button class="danger" data-action="delete-student">학생 삭제</button>
+        </div>
+        ${renderStepFooter("profile")}
+      `;
+    }
+
+    function renderMaterialsTab(student) {
+      const selectedCount = student.materials.filter(material => material.selected).length;
+      const cards = student.materials.length ? student.materials.map(material => `
+        <div class="card" data-material-id="${escapeHtml(material.id)}">
+          <div class="card-head">
+            <label style="display:flex; gap:8px; align-items:center; font-weight:800;">
+              <input type="checkbox" data-action="toggle-material" ${material.selected ? "checked" : ""} style="width:auto;">
+              ${escapeHtml(material.title)}
+            </label>
+            <div class="row">
+              <button class="small danger" data-action="delete-material">삭제</button>
+            </div>
+          </div>
+          <div class="row">
+            <span class="badge gray">${escapeHtml(material.type || "기타")}</span>
+            <span class="muted">${countChars(material.content)}자</span>
+            ${material.sourceFileName ? `<span class="muted">${escapeHtml(material.sourceFileName)}</span>` : ""}
+          </div>
+          <div class="preview">${escapeHtml((material.content || "내용 없음").slice(0, 320))}</div>
+          <details class="material-detail">
+            <summary>내용 보기/수정</summary>
+            <div class="grid two" style="margin-top:10px;">
+              <label>자료 제목<input data-field="title" value="${escapeHtml(material.title)}"></label>
+              <label>자료 유형
+                <select data-field="type">
+                  ${["보고서", "소감문", "발표자료", "활동기록", "기타"].map(type => `<option ${material.type === type ? "selected" : ""}>${type}</option>`).join("")}
+                </select>
+              </label>
+            </div>
+            <label style="margin-top:10px;">자료 내용<textarea data-field="content">${escapeHtml(material.content)}</textarea></label>
+            <button class="small" data-action="save-material" style="margin-top:8px;">수정 저장</button>
+          </details>
+        </div>
+      `).join("") : `<div class="empty">아직 학생 자료가 없습니다.</div>`;
+      return `
+        <div class="section-title">
+          <h2>학생 자료</h2>
+          <div class="row">
+            <span class="badge">${student.materials.length}개</span>
+            <span class="badge gray">반영 ${selectedCount}개</span>
+            <button id="clearMaterialsBtn" class="small danger">자료 전체삭제</button>
+          </div>
+        </div>
+        <details class="compact-tools">
+          <summary>자료 추가 도구 열기</summary>
+          <div class="grid two" style="margin-top:12px;">
+            <label>자료 제목<input id="materialTitle" placeholder="예: 탐구 보고서"></label>
+            <label>자료 유형
+              <select id="materialType">
+                <option>보고서</option><option>소감문</option><option>발표자료</option><option>활동기록</option><option>기타</option>
+              </select>
+            </label>
+          </div>
+          <label style="margin-top:12px;">직접 텍스트 붙여넣기
+            <textarea id="materialContent" placeholder="학생 자료 내용을 붙여넣으세요."></textarea>
+          </label>
+          <div class="row" style="margin-top:10px;">
+            <button id="addMaterialBtn" class="primary">자료 추가</button>
+            <label style="display:inline-flex; width:auto; gap:8px; align-items:center;">
+              <span>파일 업로드</span>
+              <input id="materialFileInput" type="file" multiple accept=".txt,.md,.csv,.pdf,.docx,.xlsx,.jpg,.jpeg,.png,image/jpeg,image/png" style="width:260px;">
+            </label>
+            <button id="ocrPdfBtn">PDF/이미지 OCR 시도</button>
+            <input id="ocrPdfInput" class="sr-only" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+          </div>
+          <div id="materialDropZone" class="drop-zone">
+            <div>
+              <strong>파일을 여기에 드래그해서 추가</strong><br>
+              txt, md, csv, pdf, docx, xlsx, jpg, png 파일을 여러 개 놓을 수 있습니다.
+            </div>
+          </div>
+        </details>
+        <p id="ocrStatus" class="muted">txt, md, csv, pdf는 내용 추출을 시도하고, 스캔 PDF나 이미지 파일은 OCR로 학생 자료 카드에 등록합니다. docx, xlsx는 내용 추출이 제한되면 직접 붙여넣기 안내로 등록됩니다.</p>
+        ${cards}
+        ${renderStepFooter("materials")}
+      `;
+    }
+
+    function renderEvaluationTab(student) {
+      return `
+        <h2>교사 평가 입력</h2>
+        <p class="muted">각 항목의 예시를 누르면 해당 평가 칸에 자연스럽게 추가됩니다. 필요 없는 항목은 비워 두어도 됩니다.</p>
+        <div class="grid two" style="margin-top:14px;">
+          ${evaluationFields.map(([key, label]) => `
+            <div class="card" style="margin-top:0;">
+              <label>${label}
+                <textarea data-evaluation="${key}" placeholder="${label} 내용을 입력하세요.">${escapeHtml(student.evaluation[key] || "")}</textarea>
+              </label>
+              <div class="quick-buttons" style="margin-top:8px;">
+                ${(evaluationExamples[key] || quickTexts).map(text => `<button class="small" data-eval-target="${key}" data-quick-text="${escapeHtml(text)}">${escapeHtml(text)}</button>`).join("")}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+        ${renderStepFooter("evaluation")}
+      `;
+    }
+
+    function renderPromptTab(student) {
+      return `
+        <div class="section-title">
+          <h2>최종 세특 작성 프롬프트 생성</h2>
+          <div class="row">
+            <button id="generatePromptBtn" class="primary">프롬프트 생성</button>
+            <button id="copyPromptBtn">프롬프트 복사</button>
+          </div>
+        </div>
+        <div class="card" style="margin-top:0;">
+          <div class="card-head">
+            <strong>참고 사례 반영 방식</strong>
+            <span class="badge gray">${appData.settings.includeReferenceInPrompt === false ? "원문 미포함" : "원문 포함"}</span>
+          </div>
+          <div class="row">
+            <button class="small ${appData.settings.includeReferenceInPrompt === false ? "" : "primary"}" data-action="set-prompt-reference" data-include-reference="true">참고사례 포함</button>
+            <button class="small ${appData.settings.includeReferenceInPrompt === false ? "primary" : ""}" data-action="set-prompt-reference" data-include-reference="false">참고사례 미포함</button>
+            <span class="muted">미포함을 선택하면 참고 사례 원문은 빼고, 문체 분석 요약만 프롬프트에 넣습니다.</span>
+          </div>
+        </div>
+        <textarea id="promptOutput" style="min-height:420px;" placeholder="프롬프트 생성 버튼을 누르면 여기에 표시됩니다.">${escapeHtml(student.prompt || "")}</textarea>
+        <div class="card">
+          <div class="card-head">
+            <strong>ChatGPT API로 바로 결과 생성</strong>
+            <span class="badge warn">API 별도 과금</span>
+          </div>
+          <div class="grid two">
+            <label>OpenAI API Key
+              <input id="openaiApiKeyInput" type="password" value="${escapeHtml(openaiApiKey)}" placeholder="sk-...">
+            </label>
+            <label>모델
+              <input id="openaiModelInput" value="${escapeHtml(appData.settings.apiModel || "gpt-5.5")}" placeholder="예: gpt-5.5">
+            </label>
+          </div>
+          <label style="display:flex; grid-template-columns:auto 1fr; gap:8px; align-items:center; margin-top:10px; font-weight:700;">
+            <input id="compactApiPromptInput" type="checkbox" ${appData.settings.compactApiPrompt !== false ? "checked" : ""} style="width:auto;">
+            참고 사례 원문 전체 대신 문체 분석만 API에 보내기
+          </label>
+          <div class="row" style="margin-top:10px;">
+            <button id="generateWithApiBtn" class="primary">API로 세특 생성</button>
+            <span id="apiStatus" class="muted">API 키는 저장하지 않습니다. 호출 시 학생 자료가 OpenAI API로 전송됩니다.</span>
+          </div>
+        </div>
+        ${renderStepFooter("prompt")}
+      `;
+    }
+
+    function renderResultTab(student) {
+      const checks = checkResult(student);
+      return `
+        <div class="section-title">
+          <h2>세특 결과 관리</h2>
+          <button id="saveResultBtn" class="primary">결과 저장</button>
+        </div>
+        <label>ChatGPT에서 생성한 세특 결과 붙여넣기
+          <textarea id="resultText" style="min-height:220px;">${escapeHtml(student.result || "")}</textarea>
+        </label>
+        <div class="row" style="margin:10px 0;">
+          <span class="badge">글자 수 ${countChars(student.result)}자</span>
+          <span class="muted">점검은 보조 기능이며 교사의 최종 검토가 필요합니다.</span>
+        </div>
+        <div class="checks">
+          ${checks.map(item => `<div class="check-line"><span>${escapeHtml(item.label)}</span><span class="badge ${item.level}">${escapeHtml(item.text)}</span></div>`).join("")}
+        </div>
+        ${renderStepFooter("result")}
+      `;
+    }
+
+    function countChars(text) {
+      return String(text || "").replace(/\s/g, "").length;
+    }
+
+    function checkResult(student) {
+      const result = student.result || "";
+      const bannedTerms = (appData.settings.banned || "").split(/[,，\n]/).map(item => item.trim()).filter(Boolean);
+      const selectedMaterials = student.materials.filter(item => item.selected);
+      const materialKeywords = selectedMaterials.flatMap(item => (item.content || item.title || "").split(/\s+/).filter(word => word.length >= 3).slice(0, 5));
+      const hasMaterialKeyword = !materialKeywords.length || materialKeywords.some(word => result.includes(word));
+      const exaggerations = ["탁월", "완벽", "최고", "천재", "압도", "매우 우수"].filter(word => result.includes(word));
+      return [
+        { label: "글자 수 확인", text: `${countChars(result)}자`, level: countChars(result) ? "ok" : "warn" },
+        { label: "학생 이름 직접 언급 여부", text: student.name && result.includes(student.name) ? "확인 필요" : "양호", level: student.name && result.includes(student.name) ? "warn" : "ok" },
+        { label: "과장 표현 가능성", text: exaggerations.length ? exaggerations.join(", ") : "낮음", level: exaggerations.length ? "warn" : "ok" },
+        { label: "금지어 포함 여부", text: bannedTerms.some(term => result.includes(term)) ? "확인 필요" : "양호", level: bannedTerms.some(term => result.includes(term)) ? "warn" : "ok" },
+        { label: "선택 자료 반영 여부", text: hasMaterialKeyword ? "일부 확인" : "확인 필요", level: hasMaterialKeyword ? "ok" : "warn" }
+      ];
+    }
+
+    function generatePrompt(options = {}) {
+      const includeReferenceFullText = options.includeReferenceFullText !== false;
+      const student = selectedStudent();
+      if (!student) return "";
+      const refs = appData.references.filter(ref => ref.selected && ref.content.trim());
+      const materials = student.materials.filter(item => item.selected);
+      const evalText = evaluationFields
+        .map(([key, label]) => student.evaluation[key]?.trim() ? `- ${label}: ${student.evaluation[key].trim()}` : "")
+        .filter(Boolean).join("\n") || "- 입력된 평가 없음";
+      const materialText = materials.length ? materials.map((item, index) =>
+        `자료 ${index + 1}. [${item.type}] ${item.title}\n${item.content || "내용 추출이 어려움. 교사가 직접 붙여넣은 내용만 활용할 것."}`
+      ).join("\n\n") : "선택된 학생 자료 없음";
+      const refText = includeReferenceFullText && refs.length
+        ? refs.map((ref, index) => `사례 ${index + 1}. ${ref.content}`).join("\n\n")
+        : "참고 사례 원문은 생략하고 아래 문체 분석만 반영합니다.";
+      const analysis = document.getElementById("referenceAnalysis")?.innerText || "";
+      const learnedStyleGuide = appData.settings.style === "학습된 문체(내가 넣은 자료를 바탕으로 학습한 문체)"
+        ? "\n- 사용자가 입력한 참고 사례의 문장 길이, 구성 방식, 평가 표현 경향을 우선 반영할 것\n- 단, 참고 사례의 문장을 그대로 옮기지 말고 문체적 특징만 반영할 것"
+        : "";
+      return `역할: 고등학교 교과세특 작성 보조자
+
+과목명: ${appData.settings.subject || "미입력"}
+학생 정보: ${student.className || appData.settings.className || "반 미입력"} ${student.number || "번호 미입력"}번 학생
+작성 글자 수 기준: ${appData.settings.targetLength || "미입력"}
+작성 문체: ${appData.settings.style || "기본형"}
+
+[참고 사례]
+아래 참고 사례는 문체와 표현 방식만 참고하고 문장을 그대로 복사하지 마세요.
+${refText}
+
+[참고 사례의 문체 특징]
+${analysis || "문체 분석 정보 없음"}
+
+[선택된 학생 자료]
+${materialText}
+
+[교사 평가]
+${evalText}
+
+[작성 조건]
+- 학생 자료와 교사 평가에 근거해서만 작성할 것
+- 없는 활동을 지어내지 말 것
+- 지나친 칭찬이나 과장된 표현을 피할 것
+- 참고 사례 문장을 그대로 복사하지 말 것
+- 생활기록부 문체에 맞게 자연스럽게 작성할 것
+- 학생 이름을 직접 쓰지 않고 "학생은" 형태로 작성할 것
+- 한 문단으로 자연스럽게 작성할 것${learnedStyleGuide}
+
+[금지 조건]
+${appData.settings.banned || "과장 금지, 근거 없는 칭찬 금지, 학생 자료에 없는 내용 추가 금지"}
+
+[결과물 요구 형식]
+${appData.settings.subject || "해당 과목"} 교과세부능력 및 특기사항에 바로 검토해 활용할 수 있는 문장으로 작성하세요.`;
+    }
+
+    function extractOpenAIText(data) {
+      if (data.output_text) return data.output_text;
+      const chunks = [];
+      (data.output || []).forEach(item => {
+        (item.content || []).forEach(content => {
+          if (content.text) chunks.push(content.text);
+        });
+      });
+      return chunks.join("\n").trim();
+    }
+
+    async function generateResultWithApi() {
+      const student = selectedStudent();
+      if (!student) return;
+      const keyInput = document.getElementById("openaiApiKeyInput");
+      const modelInput = document.getElementById("openaiModelInput");
+      const compactInput = document.getElementById("compactApiPromptInput");
+      const status = document.getElementById("apiStatus");
+      openaiApiKey = keyInput?.value.trim() || "";
+      appData.settings.apiModel = modelInput?.value.trim() || "gpt-5.5";
+      appData.settings.compactApiPrompt = !!compactInput?.checked;
+      if (!openaiApiKey) {
+        showToast("OpenAI API Key를 입력해 주세요.");
+        return;
+      }
+      const prompt = generatePrompt({ includeReferenceFullText: !appData.settings.compactApiPrompt });
+      student.prompt = prompt;
+      if (status) status.textContent = "OpenAI API로 세특을 생성하는 중입니다...";
+      try {
+        const response = await fetch("https://api.openai.com/v1/responses", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${openaiApiKey}`
+          },
+          body: JSON.stringify({
+            model: appData.settings.apiModel,
+            input: prompt
+          })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error?.message || `API 오류: ${response.status}`);
+        const text = extractOpenAIText(data);
+        if (!text) throw new Error("API 응답에서 결과 문장을 찾지 못했습니다.");
+        student.result = text.trim();
+        activeTab = "result";
+        scheduleSave();
+        renderAll();
+        showToast("API로 세특 결과를 생성했습니다.");
+      } catch (error) {
+        if (status) status.textContent = `API 호출 실패: ${error.message}`;
+        showToast("API 호출에 실패했습니다.");
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function downloadFile(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadJson() {
+      persistNow();
+      downloadFile(`세특기재도우미_저장파일_${todayString()}.json`, JSON.stringify(appData, null, 2), "application/json;charset=utf-8");
+    }
+
+    function csvCell(value) {
+      return `"${String(value ?? "").replace(/"/g, '""')}"`;
+    }
+
+    function downloadCsv() {
+      const header = ["반", "번호", "이름", "작성 상태", "선택 자료 제목", "교사 종합 의견", "생성 프롬프트", "세특 결과", "글자 수"];
+      const rows = appData.students.map(student => [
+        student.className || appData.settings.className,
+        student.number,
+        student.name,
+        getStudentStatus(student),
+        student.materials.filter(item => item.selected).map(item => item.title).join("; "),
+        student.evaluation.overall,
+        student.prompt,
+        student.result,
+        countChars(student.result)
+      ]);
+      const csv = "\ufeff" + [header, ...rows].map(row => row.map(csvCell).join(",")).join("\n");
+      downloadFile(`교과세특_작성결과_${todayString()}.csv`, csv, "text/csv;charset=utf-8");
+    }
+
+    async function downloadResultXlsx() {
+      try {
+        const XLSX = await loadXlsx();
+        const rows = [
+          ["반", "번호", "이름", "간단메모", "세특 결과", "글자 수"],
+          ...appData.students.map(student => [
+            student.className || appData.settings.className,
+            student.number,
+            student.name,
+            student.memo,
+            student.result || "",
+            countChars(student.result)
+          ])
+        ];
+        const workbook = XLSX.utils.book_new();
+        const sheet = XLSX.utils.aoa_to_sheet(rows);
+        sheet["!cols"] = [
+          { wch: 12 },
+          { wch: 8 },
+          { wch: 12 },
+          { wch: 28 },
+          { wch: 90 },
+          { wch: 10 }
+        ];
+        XLSX.utils.book_append_sheet(workbook, sheet, "세특결과");
+        XLSX.writeFile(workbook, `교과세특_입력결과_${todayString()}.xlsx`);
+      } catch (error) {
+        showToast("엑셀 내려받기에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    }
+
+    function loadXlsx() {
+      if (window.XLSX) return Promise.resolve(window.XLSX);
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = XLSX_URL;
+        script.onload = () => window.XLSX ? resolve(window.XLSX) : reject(new Error("SheetJS를 불러오지 못했습니다."));
+        script.onerror = () => reject(new Error("SheetJS를 불러오지 못했습니다."));
+        document.head.appendChild(script);
+      });
+    }
+
+    async function readTableFile(file) {
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (["csv", "tsv"].includes(ext)) {
+        const text = await file.text();
+        const rows = ext === "tsv" ? text.split(/\r?\n/).map(line => line.split("\t")) : parseCsvRows(text);
+        return rows.filter(row => row.some(cell => String(cell || "").trim()));
+      }
+      const XLSX = await loadXlsx();
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      const firstSheetName = workbook.SheetNames[0];
+      if (!firstSheetName) return [];
+      return XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], { header: 1, defval: "" })
+        .filter(row => row.some(cell => String(cell || "").trim()));
+    }
+
+    function normalizeHeader(value) {
+      return String(value || "").replace(/\s/g, "").toLowerCase();
+    }
+
+    function findColumn(headers, patterns, fallbackIndex) {
+      const index = headers.findIndex(header => patterns.some(pattern => pattern.test(normalizeHeader(header))));
+      return index >= 0 ? index : fallbackIndex;
+    }
+
+    function rowsHaveHeaders(rows, patterns) {
+      if (!rows.length) return false;
+      const first = rows[0].map(normalizeHeader).join("|");
+      return patterns.some(pattern => pattern.test(first));
+    }
+
+    function parseRosterRows(rows) {
+      const hasHeaders = rowsHaveHeaders(rows, [/반/, /번호/, /이름|성명/]);
+      const headers = hasHeaders ? rows[0] : ["반", "번호", "이름", "간단메모"];
+      const dataRows = hasHeaders ? rows.slice(1) : rows;
+      const classIndex = findColumn(headers, [/^반$/, /학년반/, /학급/, /class/], 0);
+      const numberIndex = findColumn(headers, [/번호|번|no|number/], 1);
+      const nameIndex = findColumn(headers, [/이름|성명|학생명|name/], 2);
+      const memoIndex = findColumn(headers, [/메모|비고|특이사항|note|memo/], 3);
+      return dataRows.map(row => ({
+        className: String(row[classIndex] || "").trim(),
+        number: String(row[numberIndex] || "").trim(),
+        name: String(row[nameIndex] || "").trim(),
+        memo: String(row[memoIndex] || "").trim()
+      })).filter(student => student.name);
+    }
+
+    function parseRosterText(text) {
+      const trimmed = String(text || "").trim();
+      if (!trimmed) return [];
+      const delimiter = trimmed.includes("\t") ? "\t" : ",";
+      const rows = delimiter === "\t"
+        ? trimmed.split(/\r?\n/).map(line => line.split("\t").map(cell => cell.trim()))
+        : parseCsvRows(trimmed);
+      return parseRosterRows(rows);
+    }
+
+    function addRosterStudents(students) {
+      if (!students.length) {
+        showToast("추가할 학생 명렬을 찾지 못했습니다.");
+        return;
+      }
+      const created = students.map(item => ({
+        id: uid("student"),
+        name: item.name,
+        className: item.className || appData.settings.className,
+        number: item.number,
+        memo: item.memo,
+        materials: [],
+        evaluation: createDefaultEvaluation(),
+        prompt: "",
+        result: ""
+      }));
+      appData.students.push(...created);
+      appData.selectedStudentId = created[0].id;
+      activeTab = "profile";
+      scheduleSave();
+      renderAll();
+      showToast(`${created.length}명의 학생을 추가했습니다.`);
+    }
+
+    function parseReferenceRows(rows) {
+      const hasHeaders = rowsHaveHeaders(rows, [/제목|title/, /내용|사례|세특|content/]);
+      const headers = hasHeaders ? rows[0] : ["제목", "내용", "선택"];
+      const dataRows = hasHeaders ? rows.slice(1) : rows;
+      const titleIndex = findColumn(headers, [/제목|title|자료명/], 0);
+      const contentIndex = findColumn(headers, [/내용|사례|세특|본문|content|text/], 1);
+      const selectedIndex = findColumn(headers, [/선택|사용|반영|selected|use/], 2);
+      return dataRows.map((row, index) => {
+        const content = String(row[contentIndex] || row.find(Boolean) || "").trim();
+        const selectedRaw = String(row[selectedIndex] ?? "Y").trim().toLowerCase();
+        return {
+          id: uid("ref"),
+          title: String(row[titleIndex] || `참고 사례 ${appData.references.length + index + 1}`).trim(),
+          content,
+          selected: !["n", "no", "false", "0", "아니오", "미선택", "x"].includes(selectedRaw)
+        };
+      }).filter(ref => ref.content);
+    }
+
+    async function handleReferenceFile(event) {
+      const file = event.target.files[0];
+      event.target.value = "";
+      if (!file) return;
+      try {
+        const rows = await readTableFile(file);
+        const refs = parseReferenceRows(rows);
+        if (!refs.length) {
+          showToast("추가할 참고 사례를 찾지 못했습니다.");
+          return;
+        }
+        appData.references.push(...refs);
+        scheduleSave();
+        renderReferences();
+        showToast(`${refs.length}개의 참고 사례를 추가했습니다.`);
+      } catch (error) {
+        showToast("사례 파일을 읽지 못했습니다.");
+      }
+    }
+
+    async function handleRosterFile(event) {
+      const file = event.target.files[0];
+      event.target.value = "";
+      if (!file) return;
+      try {
+        addRosterStudents(parseRosterRows(await readTableFile(file)));
+      } catch (error) {
+        showToast("명렬 파일을 읽지 못했습니다.");
+      }
+    }
+
+    async function downloadInputTemplate() {
+      const studentRows = [
+        ["반", "번호", "이름", "간단메모"],
+        ["2-3", "1", "김가람", "탐구 활동에서 자료 정리가 꼼꼼함"],
+        ["2-3", "2", "이도윤", "발표 과정에서 설명이 차분함"]
+      ];
+      const referenceRows = [
+        ["제목", "내용", "선택"],
+        ["탐구활동 중심 사례", "학생은 탐구 과정에서 개념을 실제 상황과 연결하고 자료를 체계적으로 정리함.", "Y"],
+        ["발표협업 중심 사례", "학생은 모둠 활동에서 의견을 조율하고 발표 후 피드백을 반영해 설명을 보완함.", "Y"]
+      ];
+      try {
+        const XLSX = await loadXlsx();
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(studentRows), "학생명렬");
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(referenceRows), "참고사례");
+        XLSX.writeFile(workbook, `세특기재도우미_입력양식_${todayString()}.xlsx`);
+      } catch (error) {
+        const csv = "\ufeff" + studentRows.map(row => row.map(csvCell).join(",")).join("\n");
+        downloadFile(`세특기재도우미_학생명렬양식_${todayString()}.csv`, csv, "text/csv;charset=utf-8");
+        showToast("엑셀 양식 생성이 어려워 CSV 양식으로 내려받았습니다.");
+      }
+    }
+
+    function addStudent() {
+      const name = document.getElementById("newStudentName").value.trim();
+      if (!name) {
+        showToast("학생 이름을 입력해 주세요.");
+        return;
+      }
+      const student = {
+        id: uid("student"),
+        name,
+        className: document.getElementById("newStudentClass").value.trim() || appData.settings.className,
+        number: document.getElementById("newStudentNumber").value.trim(),
+        memo: document.getElementById("newStudentMemo").value.trim(),
+        materials: [],
+        evaluation: createDefaultEvaluation(),
+        prompt: "",
+        result: ""
+      };
+      appData.students.push(student);
+      appData.selectedStudentId = student.id;
+      ["newStudentName", "newStudentClass", "newStudentNumber", "newStudentMemo"].forEach(id => document.getElementById(id).value = "");
+      activeTab = "profile";
+      scheduleSave();
+      renderAll();
+      showToast("학생을 추가했습니다.");
+    }
+
+    function addReference() {
+      if (!isReferenceManageVisible) {
+        isReferenceManageVisible = true;
+        renderVisibilityToggles();
+        document.getElementById("referenceInput").focus();
+        return;
+      }
+      const input = document.getElementById("referenceInput");
+      const content = input.value.trim();
+      if (!content) {
+        showToast("참고 사례 내용을 입력해 주세요.");
+        return;
+      }
+      appData.references.push({ id: uid("ref"), title: `참고 사례 ${appData.references.length + 1}`, content, selected: true });
+      input.value = "";
+      scheduleSave();
+      renderReferences();
+    }
+
+    function addMaterialFromForm() {
+      const student = selectedStudent();
+      if (!student) return;
+      const title = document.getElementById("materialTitle").value.trim() || "제목 없는 자료";
+      const type = document.getElementById("materialType").value;
+      const content = document.getElementById("materialContent").value.trim();
+      if (!content) {
+        showToast("자료 내용을 입력해 주세요.");
+        return;
+      }
+      student.materials.push({ id: uid("mat"), title, type, content, selected: true });
+      scheduleSave();
+      renderAll();
+      showToast("자료를 추가했습니다.");
+    }
+
+    function loadPdfJs() {
+      if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = PDFJS_URL;
+        script.onload = () => {
+          if (!window.pdfjsLib) {
+            reject(new Error("PDF.js를 불러오지 못했습니다."));
+            return;
+          }
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
+          resolve(window.pdfjsLib);
+        };
+        script.onerror = () => reject(new Error("PDF.js를 불러오지 못했습니다."));
+        document.head.appendChild(script);
+      });
+    }
+
+    async function extractPdfText(file) {
+      const pdfjsLib = await loadPdfJs();
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+      const pages = [];
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+        const page = await pdf.getPage(pageNumber);
+        const textContent = await page.getTextContent();
+        const lines = groupPdfItemsIntoLines(textContent.items);
+        pages.push(lines.join("\n"));
+      }
+      const text = pages.join("\n\n").trim();
+      if (!text) throw new Error("PDF에서 텍스트를 추출하지 못했습니다.");
+      return text;
+    }
+
+    function loadTesseract() {
+      if (window.Tesseract) return Promise.resolve(window.Tesseract);
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = TESSERACT_URL;
+        script.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error("OCR 라이브러리를 불러오지 못했습니다."));
+        script.onerror = () => reject(new Error("OCR 라이브러리를 불러오지 못했습니다."));
+        document.head.appendChild(script);
+      });
+    }
+
+    function updateOcrStatus(message) {
+      const status = document.getElementById("ocrStatus");
+      if (status) status.textContent = message;
+    }
+
+    async function extractPdfTextWithOcr(file) {
+      const [pdfjsLib, Tesseract] = await Promise.all([loadPdfJs(), loadTesseract()]);
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+      const pageTexts = [];
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+        updateOcrStatus(`${file.name}: ${pageNumber}/${pdf.numPages}쪽 OCR 처리 중... 처음 실행은 언어 데이터 다운로드로 시간이 걸릴 수 있습니다.`);
+        const page = await pdf.getPage(pageNumber);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        await page.render({ canvasContext: context, viewport }).promise;
+        const result = await Tesseract.recognize(canvas, "kor+eng", {
+          logger: progress => {
+            if (progress.status === "recognizing text") {
+              updateOcrStatus(`${file.name}: ${pageNumber}/${pdf.numPages}쪽 OCR ${Math.round((progress.progress || 0) * 100)}%`);
+            }
+          }
+        });
+        pageTexts.push((result.data?.text || "").trim());
+        canvas.width = 0;
+        canvas.height = 0;
+      }
+      const text = pageTexts.join("\n\n").trim();
+      if (!text) throw new Error("OCR로도 텍스트를 찾지 못했습니다.");
+      return text;
+    }
+
+    function isImageFile(file) {
+      const name = file.name.toLowerCase();
+      return ["image/jpeg", "image/png"].includes(file.type) || /\.(jpe?g|png)$/.test(name);
+    }
+
+    async function extractImageTextWithOcr(file) {
+      const Tesseract = await loadTesseract();
+      updateOcrStatus(`${file.name}: 이미지 OCR 처리 중...`);
+      const result = await Tesseract.recognize(file, "kor+eng", {
+        logger: progress => {
+          if (progress.status === "recognizing text") {
+            updateOcrStatus(`${file.name}: 이미지 OCR ${Math.round((progress.progress || 0) * 100)}%`);
+          }
+        }
+      });
+      const text = (result.data?.text || "").trim();
+      if (!text) throw new Error("이미지 OCR로 텍스트를 찾지 못했습니다.");
+      return text;
+    }
+
+    async function extractFileTextWithOcr(file) {
+      if (isImageFile(file)) return extractImageTextWithOcr(file);
+      return extractPdfTextWithOcr(file);
+    }
+
+    function groupPdfItemsIntoLines(items) {
+      const rows = [];
+      items.forEach(item => {
+        const text = String(item.str || "").trim();
+        if (!text) return;
+        const y = Math.round(item.transform?.[5] || 0);
+        const x = item.transform?.[4] || 0;
+        let row = rows.find(entry => Math.abs(entry.y - y) <= 2);
+        if (!row) {
+          row = { y, parts: [] };
+          rows.push(row);
+        }
+        row.parts.push({ x, text });
+      });
+      return rows
+        .sort((a, b) => b.y - a.y)
+        .map(row => row.parts.sort((a, b) => a.x - b.x).map(part => part.text).join(" ").trim())
+        .filter(Boolean);
+    }
+
+    function parseCsvRows(text) {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+      for (let index = 0; index < text.length; index += 1) {
+        const char = text[index];
+        const next = text[index + 1];
+        if (char === '"' && inQuotes && next === '"') {
+          cell += '"';
+          index += 1;
+        } else if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === "," && !inQuotes) {
+          row.push(cell.trim());
+          cell = "";
+        } else if ((char === "\n" || char === "\r") && !inQuotes) {
+          if (char === "\r" && next === "\n") index += 1;
+          row.push(cell.trim());
+          if (row.some(Boolean)) rows.push(row);
+          row = [];
+          cell = "";
+        } else {
+          cell += char;
+        }
+      }
+      row.push(cell.trim());
+      if (row.some(Boolean)) rows.push(row);
+      return rows;
+    }
+
+    function splitCsvIntoMaterials(text, fallbackTitle, sourceFileName) {
+      const rows = parseCsvRows(text);
+      if (rows.length < 2 || rows[0].length < 2) {
+        return splitTextIntoMaterials(text, fallbackTitle, sourceFileName);
+      }
+      const headers = rows[0].map(header => header || "항목");
+      const titleIndex = headers.findIndex(header => /제목|자료|활동|주제|보고서|소감|발표/.test(header));
+      return rows.slice(1).filter(row => row.some(Boolean)).map((row, index) => {
+        const titleSource = titleIndex >= 0 ? row[titleIndex] : row.find(Boolean);
+        const title = cleanHeading(titleSource) || `${fallbackTitle} ${index + 1}`;
+        const content = headers.map((header, columnIndex) => {
+          const value = row[columnIndex];
+          return value ? `${header}: ${value}` : "";
+        }).filter(Boolean).join("\n");
+        return createMaterialFromUpload(title, content, sourceFileName, "활동기록");
+      });
+    }
+
+    function splitTextIntoMaterials(text, fallbackTitle, sourceFileName) {
+      const normalized = String(text || "").replace(/\r\n?/g, "\n").trim();
+      if (!normalized) {
+        return [createMaterialFromUpload(fallbackTitle, "내용을 직접 붙여넣어 주세요.", sourceFileName, "기타", false)];
+      }
+      const lines = normalized.split("\n");
+      const headingIndexes = [];
+      lines.forEach((line, index) => {
+        if (isLikelyMaterialHeading(line, lines[index + 1])) headingIndexes.push(index);
+      });
+
+      if (headingIndexes.length >= 2 || (headingIndexes.length === 1 && headingIndexes[0] <= 2)) {
+        return headingIndexes.map((lineIndex, sectionIndex) => {
+          const nextIndex = headingIndexes[sectionIndex + 1] ?? lines.length;
+          const title = cleanHeading(lines[lineIndex]) || `${fallbackTitle} ${sectionIndex + 1}`;
+          const content = lines.slice(lineIndex + 1, nextIndex).join("\n").trim() || title;
+          return createMaterialFromUpload(title, content, sourceFileName);
+        });
+      }
+
+      const title = deriveTitleFromText(normalized, fallbackTitle);
+      return [createMaterialFromUpload(title, normalized, sourceFileName)];
+    }
+
+    function isLikelyMaterialHeading(line, nextLine) {
+      const trimmed = String(line || "").trim();
+      if (!trimmed || trimmed.length > 80) return false;
+      if (/^#{1,6}\s+\S/.test(trimmed)) return true;
+      if (/^\s*(\d{1,2}|[A-Za-z]|[가-힣])[\).]\s+\S/.test(trimmed)) return true;
+      if (/^(보고서|소감문|발표자료|활동기록|탐구|주제|활동|자료|평가|느낀 점|배운 점|결론)\s*[:：-]\s*\S*/.test(trimmed)) return true;
+      if (/[:：]$/.test(trimmed) && trimmed.length <= 45) return true;
+      if (nextLine && /^[-=]{3,}$/.test(String(nextLine).trim())) return true;
+      return false;
+    }
+
+    function cleanHeading(value) {
+      return String(value || "")
+        .trim()
+        .replace(/^#{1,6}\s*/, "")
+        .replace(/^\s*(\d{1,2}|[A-Za-z]|[가-힣])[\).]\s+/, "")
+        .replace(/^[-=]{3,}$/, "")
+        .replace(/[:：]\s*$/, "")
+        .trim();
+    }
+
+    function deriveTitleFromText(text, fallbackTitle) {
+      const firstLine = String(text || "").split("\n").map(cleanHeading).find(Boolean);
+      if (firstLine) return firstLine.length > 70 ? `${firstLine.slice(0, 70)}...` : firstLine;
+      return firstLine || fallbackTitle || "제목 없는 자료";
+    }
+
+    function createMaterialFromUpload(title, content, sourceFileName, type, selected = true) {
+      return {
+        id: uid("mat"),
+        title: title || "제목 없는 자료",
+        type: type || inferMaterialType(title, content),
+        content: content || "내용을 직접 붙여넣어 주세요.",
+        selected,
+        sourceFileName
+      };
+    }
+
+    function createSingleMaterialFromFile(content, fallbackTitle, sourceFileName, type, selected = true) {
+      const title = deriveTitleFromText(content, fallbackTitle);
+      return createMaterialFromUpload(title, content, sourceFileName, type || inferMaterialType(title, content), selected);
+    }
+
+    function inferMaterialType(title, content) {
+      const text = `${title || ""}\n${content || ""}`;
+      if (/소감|느낀/.test(text)) return "소감문";
+      if (/발표|프레젠테이션|ppt/i.test(text)) return "발표자료";
+      if (/활동|기록|관찰/.test(text)) return "활동기록";
+      if (/보고서|탐구|분석|조사/.test(text)) return "보고서";
+      return "기타";
+    }
+
+    async function handleMaterialFiles(files) {
+      const student = selectedStudent();
+      if (!student) return;
+      let addedCount = 0;
+      for (const file of files) {
+        const ext = file.name.split(".").pop().toLowerCase();
+        const fallbackTitle = file.name.replace(/\.[^.]+$/, "");
+        let content = "";
+        let materials = [];
+        try {
+          if (["txt", "md"].includes(ext)) {
+            content = await file.text();
+            materials = [createSingleMaterialFromFile(content, fallbackTitle, file.name)];
+          } else if (ext === "csv") {
+            content = await file.text();
+            materials = [createSingleMaterialFromFile(content, fallbackTitle, file.name, "활동기록")];
+          } else if (ext === "pdf") {
+            try {
+              content = await extractPdfText(file);
+            } catch (pdfTextError) {
+              content = await extractPdfTextWithOcr(file);
+            }
+            materials = [createSingleMaterialFromFile(content, fallbackTitle, file.name)];
+          } else if (isImageFile(file)) {
+            content = await extractImageTextWithOcr(file);
+            materials = [createSingleMaterialFromFile(content, fallbackTitle, file.name)];
+          } else {
+            materials = [createMaterialFromUpload(
+              fallbackTitle,
+              "이 파일 형식은 브라우저 단독 처리에서 내용 추출이 제한될 수 있습니다. 필요한 내용을 직접 붙여넣어 주세요.",
+              file.name,
+              "기타",
+              false
+            )];
+          }
+        } catch (error) {
+          materials = [createMaterialFromUpload(
+            fallbackTitle,
+            `${file.name}의 내용을 자동 추출하지 못했습니다. 스캔 PDF나 이미지라면 'PDF/이미지 OCR 시도' 버튼으로 다시 선택해 보거나, 필요한 내용을 직접 붙여넣어 주세요.`,
+            file.name,
+            "기타",
+            false
+          )];
+        }
+        student.materials.push(...materials);
+        addedCount += materials.length;
+      }
+      scheduleSave();
+      renderAll();
+      showToast(`${addedCount}개 자료를 등록했습니다.`);
+    }
+
+    async function handleOcrPdfFiles(files) {
+      const student = selectedStudent();
+      if (!student) return;
+      const ocrFiles = Array.from(files || []).filter(file => file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf" || isImageFile(file));
+      if (!ocrFiles.length) {
+        showToast("OCR을 시도할 PDF 또는 이미지 파일을 선택해 주세요.");
+        return;
+      }
+      let addedCount = 0;
+      for (const file of ocrFiles) {
+        const fallbackTitle = file.name.replace(/\.[^.]+$/, "");
+        try {
+          const content = await extractFileTextWithOcr(file);
+          student.materials.push(createSingleMaterialFromFile(content, fallbackTitle, file.name));
+          addedCount += 1;
+        } catch (error) {
+          student.materials.push(createMaterialFromUpload(
+            fallbackTitle,
+            `${file.name}의 OCR 추출에 실패했습니다. 스캔 품질이 낮거나 손글씨/이미지 구조일 수 있습니다. 필요한 내용을 직접 붙여넣어 주세요.`,
+            file.name,
+            "기타",
+            false
+          ));
+          addedCount += 1;
+        }
+      }
+      scheduleSave();
+      renderAll();
+      updateOcrStatus(`OCR 처리 완료: ${addedCount}개 자료를 등록했습니다.`);
+      showToast(`OCR 처리로 ${addedCount}개 자료를 등록했습니다.`);
+    }
+
+    function wireEvents() {
+      document.getElementById("subjectInput").addEventListener("input", e => { appData.settings.subject = e.target.value; scheduleSave(); });
+      document.getElementById("classInput").addEventListener("input", e => { appData.settings.className = e.target.value; scheduleSave(); });
+      document.getElementById("lengthInput").addEventListener("input", e => { appData.settings.targetLength = e.target.value; scheduleSave(); });
+      document.getElementById("styleSelect").addEventListener("change", e => { appData.settings.style = e.target.value; scheduleSave(); });
+      document.getElementById("banInput").addEventListener("input", e => { appData.settings.banned = e.target.value; scheduleSave(); });
+      document.getElementById("addStudentBtn").addEventListener("click", addStudent);
+      document.getElementById("addReferenceBtn").addEventListener("click", addReference);
+      document.getElementById("toggleSettingsBtn").addEventListener("click", () => {
+        isSettingsVisible = !isSettingsVisible;
+        renderVisibilityToggles();
+      });
+      document.getElementById("toggleStudentAddBtn").addEventListener("click", () => {
+        isStudentAddVisible = !isStudentAddVisible;
+        renderVisibilityToggles();
+      });
+      document.getElementById("toggleStudentListBtn").addEventListener("click", () => {
+        isStudentListVisible = !isStudentListVisible;
+        renderVisibilityToggles();
+      });
+      document.getElementById("toggleReferenceManageBtn").addEventListener("click", () => {
+        isReferenceManageVisible = !isReferenceManageVisible;
+        renderVisibilityToggles();
+      });
+      document.getElementById("downloadJsonBtn").addEventListener("click", downloadJson);
+      document.getElementById("downloadTemplateBtn").addEventListener("click", downloadInputTemplate);
+      document.getElementById("downloadCsvBtn").addEventListener("click", downloadCsv);
+      document.getElementById("downloadResultXlsxBtn").addEventListener("click", downloadResultXlsx);
+      document.getElementById("loadJsonBtn").addEventListener("click", () => document.getElementById("loadJsonInput").click());
+      document.getElementById("loadJsonInput").addEventListener("change", handleLoadJson);
+      document.getElementById("uploadReferenceBtn").addEventListener("click", () => document.getElementById("referenceFileInput").click());
+      document.getElementById("referenceFileInput").addEventListener("change", handleReferenceFile);
+      document.getElementById("importRosterBtn").addEventListener("click", () => {
+        addRosterStudents(parseRosterText(document.getElementById("rosterInput").value));
+        document.getElementById("rosterInput").value = "";
+      });
+      document.getElementById("uploadRosterBtn").addEventListener("click", () => document.getElementById("rosterFileInput").click());
+      document.getElementById("rosterFileInput").addEventListener("change", handleRosterFile);
+      document.getElementById("resetBtn").addEventListener("click", resetStorage);
+      document.getElementById("tabs").addEventListener("click", event => {
+        if (event.target.id === "nextStudentBtn") {
+          saveCurrentTabDraft();
+          focusNextStudent();
+          return;
+        }
+        const button = event.target.closest("button[data-tab]");
+        if (!button) return;
+        activeTab = button.dataset.tab;
+        renderTab();
+      });
+      document.getElementById("studentList").addEventListener("click", event => {
+        const item = event.target.closest("[data-student-id]");
+        if (!item) return;
+        const targetStudent = appData.students.find(student => student.id === item.dataset.studentId);
+        if (event.target.dataset.action === "delete-student-list") {
+          if (targetStudent && confirm(`${targetStudent.name} 학생을 삭제할까요?`)) {
+            appData.students = appData.students.filter(student => student.id !== targetStudent.id);
+            if (appData.selectedStudentId === targetStudent.id) {
+              appData.selectedStudentId = appData.students[0]?.id || null;
+            }
+            activeTab = "profile";
+            scheduleSave();
+            renderAll();
+            showToast("학생을 삭제했습니다.");
+          }
+          return;
+        }
+        focusStudent(item.dataset.studentId);
+      });
+      document.getElementById("referenceCards").addEventListener("click", handleReferenceClick);
+      document.getElementById("tabContent").addEventListener("click", handleTabClick);
+      document.getElementById("tabContent").addEventListener("input", handleTabInput);
+      document.getElementById("tabContent").addEventListener("change", handleTabChange);
+      document.getElementById("tabContent").addEventListener("dragenter", handleMaterialDrag);
+      document.getElementById("tabContent").addEventListener("dragover", handleMaterialDrag);
+      document.getElementById("tabContent").addEventListener("dragleave", handleMaterialDrag);
+      document.getElementById("tabContent").addEventListener("drop", handleMaterialDrop);
+      document.getElementById("tabContent").addEventListener("focusin", event => {
+        if (event.target.dataset.evaluation) focusedEvaluationKey = event.target.dataset.evaluation;
+      });
+    }
+
+    function handleReferenceClick(event) {
+      const card = event.target.closest("[data-ref-id]");
+      if (!card) return;
+      const ref = appData.references.find(item => item.id === card.dataset.refId);
+      if (!ref) return;
+      const action = event.target.dataset.action;
+      if (action === "toggle-ref") ref.selected = event.target.checked;
+      if (action === "save-ref") {
+        ref.title = card.querySelector('[data-field="title"]').value.trim() || "참고 사례";
+        ref.content = card.querySelector('[data-field="content"]').value;
+        showToast("참고 사례를 수정했습니다.");
+      }
+      if (action === "delete-ref" && confirm("이 참고 사례를 삭제할까요?")) {
+        appData.references = appData.references.filter(item => item.id !== ref.id);
+      }
+      scheduleSave();
+      renderReferences();
+    }
+
+    function handleTabClick(event) {
+      const student = selectedStudent();
+      if (!student) return;
+      const action = event.target.dataset.action;
+      if (action === "go-next-step") {
+        goNextStep();
+        return;
+      }
+      if (event.target.id === "addMaterialBtn") addMaterialFromForm();
+      if (event.target.id === "clearMaterialsBtn") {
+        if (!student.materials.length) {
+          showToast("삭제할 자료가 없습니다.");
+          return;
+        }
+        if (confirm(`${student.name} 학생의 자료 ${student.materials.length}개를 모두 삭제할까요?`)) {
+          student.materials = [];
+          scheduleSave();
+          renderAll();
+          showToast("학생 자료를 모두 삭제했습니다.");
+        }
+      }
+      if (event.target.id === "ocrPdfBtn") document.getElementById("ocrPdfInput")?.click();
+      if (event.target.id === "generatePromptBtn") {
+        student.prompt = generatePrompt({ includeReferenceFullText: appData.settings.includeReferenceInPrompt !== false });
+        scheduleSave();
+        renderAll();
+        showToast("프롬프트를 생성했습니다.");
+      }
+      if (action === "set-prompt-reference") {
+        appData.settings.includeReferenceInPrompt = event.target.dataset.includeReference === "true";
+        scheduleSave();
+        renderTab();
+        showToast(appData.settings.includeReferenceInPrompt ? "참고사례를 포함하도록 설정했습니다." : "참고사례 원문을 제외하도록 설정했습니다.");
+      }
+      if (event.target.id === "generateWithApiBtn") generateResultWithApi();
+      if (event.target.id === "copyPromptBtn") copyPrompt(student);
+      if (event.target.id === "saveResultBtn") {
+        student.result = document.getElementById("resultText").value;
+        scheduleSave();
+        renderAll();
+        showToast("세특 결과를 저장했습니다.");
+      }
+      if (action === "delete-student" && confirm(`${student.name} 학생을 삭제할까요?`)) {
+        appData.students = appData.students.filter(item => item.id !== student.id);
+        appData.selectedStudentId = appData.students[0]?.id || null;
+        scheduleSave();
+        renderAll();
+      }
+      const quickText = event.target.dataset.quickText;
+      if (quickText) {
+        const targetKey = event.target.dataset.evalTarget || focusedEvaluationKey;
+        student.evaluation[targetKey] = [student.evaluation[targetKey], quickText].filter(Boolean).join(student.evaluation[targetKey] ? "\n" : "");
+        scheduleSave();
+        renderTab();
+      }
+      const materialCard = event.target.closest("[data-material-id]");
+      if (materialCard) handleMaterialCardClick(event, student, materialCard);
+    }
+
+    function handleMaterialCardClick(event, student, card) {
+      const material = student.materials.find(item => item.id === card.dataset.materialId);
+      if (!material) return;
+      const action = event.target.dataset.action;
+      if (action === "toggle-material") material.selected = event.target.checked;
+      if (action === "save-material") {
+        material.title = card.querySelector('[data-field="title"]').value.trim() || "자료";
+        material.type = card.querySelector('[data-field="type"]').value;
+        material.content = card.querySelector('[data-field="content"]').value;
+        showToast("자료를 수정했습니다.");
+      }
+      if (action === "delete-material" && confirm("이 자료를 삭제할까요?")) {
+        student.materials = student.materials.filter(item => item.id !== material.id);
+      }
+      scheduleSave();
+      renderAll();
+    }
+
+    function handleTabInput(event) {
+      const student = selectedStudent();
+      if (!student) return;
+      if (event.target.dataset.profile) {
+        student[event.target.dataset.profile] = event.target.value;
+        scheduleSave();
+        renderStudentList();
+      }
+      if (event.target.dataset.evaluation) {
+        student.evaluation[event.target.dataset.evaluation] = event.target.value;
+        scheduleSave();
+        renderStudentList();
+      }
+      if (event.target.id === "promptOutput") {
+        student.prompt = event.target.value;
+        scheduleSave();
+      }
+      if (event.target.id === "resultText") {
+        student.result = event.target.value;
+        scheduleSave();
+      }
+      if (event.target.id === "openaiApiKeyInput") {
+        openaiApiKey = event.target.value;
+      }
+      if (event.target.id === "openaiModelInput") {
+        appData.settings.apiModel = event.target.value;
+        scheduleSave();
+      }
+      if (event.target.id === "compactApiPromptInput") {
+        appData.settings.compactApiPrompt = event.target.checked;
+        scheduleSave();
+      }
+    }
+
+    function handleTabChange(event) {
+      if (event.target.id === "materialFileInput") {
+        handleMaterialFiles(event.target.files).catch(() => showToast("파일을 읽는 중 오류가 발생했습니다."));
+      }
+      if (event.target.id === "ocrPdfInput") {
+        handleOcrPdfFiles(event.target.files).catch(() => showToast("PDF OCR 처리 중 오류가 발생했습니다."));
+        event.target.value = "";
+      }
+      if (event.target.id === "compactApiPromptInput") {
+        appData.settings.compactApiPrompt = event.target.checked;
+        scheduleSave();
+      }
+    }
+
+    function handleMaterialDrag(event) {
+      const dropZone = event.target.closest("#materialDropZone");
+      if (!dropZone) return;
+      event.preventDefault();
+      if (event.type === "dragenter" || event.type === "dragover") {
+        dropZone.classList.add("dragging");
+      }
+      if (event.type === "dragleave" && !dropZone.contains(event.relatedTarget)) {
+        dropZone.classList.remove("dragging");
+      }
+    }
+
+    function handleMaterialDrop(event) {
+      const dropZone = event.target.closest("#materialDropZone");
+      if (!dropZone) return;
+      event.preventDefault();
+      dropZone.classList.remove("dragging");
+      const files = event.dataTransfer?.files;
+      if (!files || !files.length) {
+        showToast("추가할 파일을 찾지 못했습니다.");
+        return;
+      }
+      handleMaterialFiles(files).catch(() => showToast("드래그한 파일을 읽는 중 오류가 발생했습니다."));
+    }
+
+    async function copyPrompt(student) {
+      const text = document.getElementById("promptOutput")?.value || student.prompt || "";
+      if (!text.trim()) {
+        showToast("복사할 프롬프트가 없습니다.");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("프롬프트를 복사했습니다.");
+      } catch (error) {
+        const output = document.getElementById("promptOutput");
+        output.focus();
+        output.select();
+        document.execCommand("copy");
+        showToast("프롬프트를 복사했습니다.");
+      }
+    }
+
+    async function handleLoadJson(event) {
+      const file = event.target.files[0];
+      event.target.value = "";
+      if (!file) return;
+      if (!confirm("현재 작업 내용이 불러온 저장 파일로 덮어씌워질 수 있습니다. 계속할까요?")) return;
+      try {
+        const loaded = JSON.parse(await file.text());
+        appData = normalizeData(loaded);
+        activeTab = "profile";
+        persistNow();
+        renderAll();
+        showToast("세이브 파일을 불러왔습니다.");
+      } catch (error) {
+        showToast("JSON 저장 파일을 읽지 못했습니다.");
+      }
+    }
+
+    function resetStorage() {
+      if (!confirm("임시저장을 초기화하면 현재 브라우저의 작업 내용이 삭제됩니다. 계속할까요?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      appData = createDefaultData();
+      activeTab = "profile";
+      persistNow();
+      renderAll();
+      showToast("임시저장을 초기화했습니다.");
+    }
+
+    loadFromLocalStorage();
+    wireEvents();
+    renderAll();
+    persistNow();
+  </script>
+</body>
+</html>

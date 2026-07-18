@@ -1,0 +1,8 @@
+/node_modules
+/dist/
+/.wrangler/
+/outputs/
+/public/
+/.codex_work/
+/.tmp_ai_math/
+/tmp/
