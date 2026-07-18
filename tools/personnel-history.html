@@ -82,6 +82,11 @@
     .filter-chip { min-height: 31px; padding: 0 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: transparent; font-size: 12px; }
     .filter-chip:hover, .filter-chip.active { border-color: var(--mint); color: var(--mint); background: var(--mint-soft); }
 
+    .view-switch { display: inline-grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 10px; padding: 4px; border: 1px solid var(--line); border-radius: 12px; background: rgba(16,22,30,.78); }
+    .view-button { min-height: 36px; padding: 0 15px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; font-size: 12px; font-weight: 800; }
+    .view-button:hover { color: var(--text); background: var(--panel-2); }
+    .view-button.active { color: #08120f; background: var(--mint); }
+
     .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 12px 0; }
     .stat { padding: 14px 16px; border: 1px solid var(--line); border-radius: 13px; background: rgba(16,22,30,.72); }
     .stat span { color: var(--dim); font: 10px/1 var(--mono); letter-spacing: .1em; }
@@ -138,6 +143,53 @@
     .event-note { margin-top: 8px; color: var(--dim); font-size: 11px; }
     .custom-delete { margin-top: 9px; padding: 5px 8px; border: 1px solid rgba(255,143,143,.25); border-radius: 7px; color: var(--danger); background: transparent; font-size: 10px; }
 
+    [hidden] { display: none !important; }
+    .map-workspace { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 12px; min-height: 670px; }
+    .map-side-panel, .map-panel { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(16,22,30,.88); overflow: hidden; }
+    .map-side-scroll { height: 620px; overflow: auto; padding: 16px; }
+    .map-kicker { margin: 0 0 8px; color: var(--mint); font: 700 10px/1 var(--mono); letter-spacing: .13em; }
+    .map-side-scroll h2 { margin: 0; font-size: 23px; letter-spacing: -.035em; }
+    .map-help { margin: 10px 0 16px; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .region-directory { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 7px; }
+    .region-row { min-height: 47px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; text-align: left; background: var(--panel-2); }
+    .region-row:hover { border-color: var(--mint); background: var(--mint-soft); }
+    .region-row strong { display: block; font-size: 13px; }
+    .region-row span { display: block; margin-top: 5px; color: var(--dim); font: 10px/1 var(--mono); }
+    .map-back { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 13px; padding: 0; border: 0; color: var(--mint); background: transparent; font-size: 12px; font-weight: 800; }
+    .school-search { width: 100%; height: 40px; margin: 15px 0 9px; padding: 0 12px; border: 1px solid var(--line); border-radius: 9px; outline: none; background: #0d131a; font-size: 12px; }
+    .school-search:focus { border-color: var(--mint); }
+    .school-list { display: grid; gap: 5px; max-height: 250px; overflow: auto; padding-right: 3px; }
+    .school-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; align-items: center; min-height: 42px; padding: 8px 10px; border: 1px solid transparent; border-radius: 9px; text-align: left; background: var(--panel-2); }
+    .school-row:hover, .school-row.active { border-color: rgba(117,230,182,.5); background: var(--mint-soft); }
+    .school-row strong { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .school-row span { color: var(--dim); font: 10px/1 var(--mono); }
+    .school-people { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .school-people h3 { margin: 0; font-size: 16px; }
+    .school-address { margin: 7px 0 12px; color: var(--dim); font-size: 10px; line-height: 1.5; }
+    .map-person { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; width: 100%; margin-top: 5px; padding: 10px; border: 1px solid var(--line); border-radius: 9px; text-align: left; background: transparent; }
+    .map-person:hover { border-color: var(--mint); background: var(--mint-soft); }
+    .map-person strong { font-size: 13px; }
+    .map-person span { color: var(--blue); font: 700 10px/1 var(--mono); }
+    .map-panel-body { position: relative; height: 620px; overflow: hidden; }
+    .province-map, .district-map { position: relative; height: 100%; min-height: 560px; overflow: hidden; background: radial-gradient(circle at 80% 90%, rgba(130,183,255,.1), transparent 28%), linear-gradient(160deg, #0d151d, #111b24); }
+    .province-map::before { content: ""; position: absolute; inset: 9% 7% 8%; border: 1px solid rgba(117,230,182,.27); border-radius: 46% 35% 42% 37% / 34% 42% 31% 46%; background: radial-gradient(circle at 40% 40%, rgba(117,230,182,.13), transparent 52%), rgba(117,230,182,.035); rotate: -3deg; }
+    .province-caption { position: absolute; left: 24px; top: 22px; z-index: 2; color: var(--dim); font: 10px/1.5 var(--mono); letter-spacing: .08em; }
+    .district-button { position: absolute; z-index: 3; left: var(--x); top: var(--y); translate: -50% -50%; min-width: 68px; min-height: 47px; padding: 7px 9px; border: 1px solid var(--line-hot); border-radius: 12px; color: var(--text); background: rgba(21,29,39,.96); box-shadow: 0 7px 24px rgba(0,0,0,.22); }
+    .district-button:hover, .district-button:focus-visible { z-index: 4; border-color: var(--mint); outline: none; color: var(--mint); background: #17251f; transform: scale(1.06); }
+    .district-button strong { display: block; font-size: 13px; }
+    .district-button span { display: block; margin-top: 5px; color: var(--dim); font: 9px/1 var(--mono); }
+    .district-map { background-image: linear-gradient(rgba(66,85,106,.13) 1px, transparent 1px), linear-gradient(90deg, rgba(66,85,106,.13) 1px, transparent 1px), radial-gradient(circle at 25% 25%, rgba(117,230,182,.08), transparent 45%); background-size: 48px 48px, 48px 48px, auto; }
+    .district-map-head { position: absolute; z-index: 5; left: 22px; right: 22px; top: 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; pointer-events: none; }
+    .district-map-head strong { display: block; font-size: 25px; letter-spacing: -.04em; }
+    .district-map-head span { display: block; margin-top: 7px; color: var(--muted); font-size: 11px; }
+    .coordinate-note { max-width: 290px; color: var(--dim); font: 9px/1.45 var(--mono); text-align: right; }
+    .school-pin { position: absolute; z-index: 3; left: var(--x); top: var(--y); translate: -50% -50%; width: 15px; height: 15px; padding: 0; border: 2px solid #07110e; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 1px rgba(117,230,182,.45), 0 5px 12px rgba(0,0,0,.45); }
+    .school-pin:hover, .school-pin:focus-visible, .school-pin.active { z-index: 6; outline: none; background: var(--amber); box-shadow: 0 0 0 5px rgba(246,199,110,.16); transform: scale(1.25); }
+    .school-pin::after { content: attr(data-label); position: absolute; left: 50%; bottom: 20px; width: max-content; max-width: 180px; padding: 6px 8px; border: 1px solid var(--line-hot); border-radius: 7px; color: var(--text); background: #0b1118; font: 10px/1.2 var(--sans); translate: -50% 4px; opacity: 0; pointer-events: none; transition: .12s ease; }
+    .school-pin:hover::after, .school-pin:focus-visible::after, .school-pin.active::after { translate: -50% 0; opacity: 1; }
+    .map-source { position: absolute; z-index: 4; right: 18px; bottom: 14px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--dim); background: rgba(9,13,18,.85); font: 9px/1.4 var(--mono); text-decoration: none; }
+    .map-source:hover { color: var(--mint); border-color: var(--mint); }
+
     dialog { width: min(860px, calc(100% - 26px)); max-height: calc(100vh - 30px); padding: 0; border: 1px solid var(--line-hot); border-radius: 18px; color: var(--text); background: var(--panel); box-shadow: 0 30px 100px rgba(0,0,0,.6); }
     dialog::backdrop { background: rgba(2,5,8,.76); backdrop-filter: blur(6px); }
     .modal-head { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; min-height: 58px; padding: 0 18px; border-bottom: 1px solid var(--line); background: var(--panel); }
@@ -168,6 +220,9 @@
       .hero { grid-template-columns: 1fr; }
       .coverage { min-width: 0; }
       .workspace { grid-template-columns: 1fr; }
+      .map-workspace { grid-template-columns: 1fr; }
+      .map-side-scroll { height: auto; max-height: 560px; }
+      .map-panel-body { height: min(72vh, 620px); }
       .result-list { height: 330px; }
       .detail-scroll, .empty-detail { height: auto; min-height: 520px; }
     }
@@ -179,6 +234,12 @@
       .hero { margin-top: 34px; }
       .search-row { grid-template-columns: 1fr; }
       .stats { grid-template-columns: repeat(2, 1fr); }
+      .view-switch { width: 100%; }
+      .region-directory { grid-template-columns: repeat(3, minmax(0,1fr)); }
+      .district-button { min-width: 54px; min-height: 42px; padding: 6px; }
+      .district-button strong { font-size: 11px; }
+      .district-map-head { left: 14px; right: 14px; top: 14px; }
+      .coordinate-note { display: none; }
       .profile-head, .current-card { grid-template-columns: 1fr; }
       .profile-head { display: grid; }
       .move { grid-template-columns: 1fr; }
@@ -214,10 +275,15 @@
       </div>
     </section>
 
-    <section class="search-panel" aria-label="인사 검색">
+    <nav class="view-switch" aria-label="탐색 방식">
+      <button class="view-button active" type="button" data-view="people" aria-pressed="true">사람 검색</button>
+      <button class="view-button" type="button" data-view="map" aria-pressed="false">지도 검색</button>
+    </nav>
+
+    <section class="search-panel" id="peopleSearchPanel" aria-label="인사 검색">
       <div class="search-row">
         <div class="search-box">
-          <input id="searchInput" type="search" autocomplete="off" placeholder="이름, 학교, 교육지원청으로 검색" aria-label="이름 또는 근무지 검색" />
+          <input id="searchInput" type="search" autocomplete="off" placeholder="이름 또는 현재 학교·기관으로 검색" aria-label="이름 또는 현재 근무지 검색" />
           <button class="clear-search" id="clearSearch" type="button" aria-label="검색어 지우기">×</button>
         </div>
         <button class="ghost-button" id="exportResults" type="button">검색결과 CSV</button>
@@ -237,7 +303,7 @@
       <span>‘현재’는 실제 재직자 명부가 아니라 <b>제공 자료에서 확인되는 가장 최근 신임지</b>입니다. 이후 이동 자료가 없으면 실제 현 근무지와 다를 수 있으며, 동명이인은 한 화면에 함께 나타날 수 있습니다.</span>
     </div>
 
-    <section class="workspace">
+    <section class="workspace" id="peopleWorkspace">
       <aside class="result-panel" aria-label="검색 결과">
         <div class="panel-head"><strong>사람 목록</strong><span id="resultCount">0 RESULT</span></div>
         <div class="result-list" id="resultList"></div>
@@ -245,6 +311,42 @@
       <section class="detail-panel" aria-label="인사 이력 상세">
         <div class="panel-head"><strong>근무 이력</strong><span id="detailMeta">SELECT A PERSON</span></div>
         <div class="detail-scroll" id="detailView"></div>
+      </section>
+    </section>
+
+    <section class="map-workspace" id="mapWorkspace" aria-label="지도 검색" hidden>
+      <aside class="map-side-panel">
+        <div class="panel-head"><strong>지역 · 학교</strong><span id="mapSideMeta">18 DISTRICTS</span></div>
+        <div class="map-side-scroll">
+          <div id="mapIntro">
+            <p class="map-kicker">GYEONGNAM MAP</p>
+            <h2>시·군을 선택하세요</h2>
+            <p class="map-help">오른쪽 간략 지도나 아래 지역명을 누르면 해당 시·군의 학교 위치가 확대됩니다. 지도에는 인사자료에서 현재 근무자가 확인된 학교만 표시됩니다.</p>
+            <div class="region-directory" id="regionDirectory"></div>
+          </div>
+          <div id="schoolBrowser" hidden>
+            <button class="map-back" id="mapBack" type="button">← 경남 전체로</button>
+            <p class="map-kicker" id="districtKicker">DISTRICT</p>
+            <h2 id="districtTitle">지역</h2>
+            <p class="map-help" id="districtSummary"></p>
+            <input class="school-search" id="schoolSearch" type="search" autocomplete="off" placeholder="이 지역 학교 찾기" aria-label="선택 지역 학교 검색" />
+            <div class="school-list" id="schoolList"></div>
+            <div class="school-people" id="schoolPeople"><p class="map-help">지도 점이나 학교명을 선택하면 현재 확인 인원이 나타납니다.</p></div>
+          </div>
+        </div>
+      </aside>
+      <section class="map-panel">
+        <div class="panel-head"><strong>경남 학교 지도</strong><span id="mapPanelMeta">SCHEMATIC OVERVIEW</span></div>
+        <div class="map-panel-body">
+          <div class="province-map" id="provinceMap">
+            <div class="province-caption">시·군 선택용 간략 지도<br>실제 행정경계와 다를 수 있습니다.</div>
+          </div>
+          <div class="district-map" id="districtMap" hidden>
+            <div class="district-map-head"><div><strong id="mapDistrictName">지역</strong><span id="mapDistrictCount"></span></div><div class="coordinate-note">학교 점은 공공데이터의 위도·경도를<br>선택 지역 범위에 맞춰 배치했습니다.</div></div>
+            <div id="schoolPins"></div>
+          </div>
+          <a class="map-source" id="mapSource" href="https://www.data.go.kr/data/15021148/standard.do" target="_blank" rel="noreferrer">학교 좌표: 공공데이터포털 · 2026.03.20.</a>
+        </div>
       </section>
     </section>
   </main>
@@ -302,10 +404,20 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="./personnel-data.js"></script>
+  <script src="./school-map-data.js"></script>
   <script>
     const BASE = window.GN_PERSONNEL_DATA || { records: [], sources: [], failures: [], stats: {} };
+    const SCHOOL_MAP = window.GN_SCHOOL_MAP_DATA || { schools: [], source: {}, stats: {} };
     const STORAGE_KEY = "workbox.gnPersonnel.custom.v1";
     const roles = ["전체", "수학교사", "교감", "교장", "장학사", "장학관", "기관장"];
+    const districts = [
+      { name: "거창", x: 27, y: 18 }, { name: "함양", x: 19, y: 31 }, { name: "합천", x: 40, y: 30 },
+      { name: "창녕", x: 55, y: 31 }, { name: "밀양", x: 70, y: 25 }, { name: "양산", x: 84, y: 24 },
+      { name: "산청", x: 28, y: 43 }, { name: "의령", x: 45, y: 44 }, { name: "김해", x: 75, y: 43 },
+      { name: "하동", x: 18, y: 58 }, { name: "진주", x: 36, y: 56 }, { name: "함안", x: 52, y: 52 },
+      { name: "창원", x: 65, y: 58 }, { name: "사천", x: 36, y: 70 }, { name: "고성", x: 52, y: 70 },
+      { name: "거제", x: 67, y: 82 }, { name: "통영", x: 48, y: 84 }, { name: "남해", x: 25, y: 82 }
+    ];
     const $ = (selector) => document.querySelector(selector);
     const formatNumber = (value) => Number(value || 0).toLocaleString("ko-KR");
     let activeRole = "전체";
@@ -313,6 +425,9 @@
     let customRecords = readCustom();
     let people = [];
     let filteredPeople = [];
+    let activeView = "people";
+    let selectedDistrict = "";
+    let selectedSchoolId = "";
 
     function escapeHtml(value) {
       return String(value ?? "").replace(/[&<>\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" })[char]);
@@ -341,6 +456,27 @@
         .replace(/[\s().·․_-]/g, "");
     }
 
+    function normalizeSchoolPlace(value) {
+      return String(value || "")
+        .replace(/\s*근무를\s*명함[.]?$/, "")
+        .replace("경상남도", "")
+        .replace(/\[[^\]]+\]/g, "")
+        .replace(/[\s().·․_-]/g, "")
+        .replace("김해건설공고등학교", "김해건설공업고등학교")
+        .replace("합천교육지원청감계중학교", "감계중학교");
+    }
+
+    function isSchoolPlace(value) {
+      return /(?:초등학교|중학교|고등학교|학교)(?:[가-힣]*분교장)?(?:\s*근무를\s*명함[.]?)?$/.test(String(value || ""));
+    }
+
+    function chooseCurrentRecord(latestSet) {
+      return [...latestSet].sort((a, b) => {
+        const score = (item) => (isSchoolPlace(item.to) ? 10 : 0) + (item.to ? 2 : 0) - (/교육지원청|\([^)]+\)$/.test(item.to || "") ? 1 : 0);
+        return score(b) - score(a) || String(b.id).localeCompare(String(a.id));
+      })[0] || {};
+    }
+
     function buildPeople() {
       const groups = new Map();
       for (const record of allRecords()) {
@@ -351,15 +487,17 @@
         history.sort((a, b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
         const latestDate = history[0]?.date || "";
         const latestSet = history.filter((item) => item.date === latestDate);
-        const current = latestSet[0] || {};
+        const current = chooseCurrentRecord(latestSet);
         const currentRole = current.toRole || current.fromRole || "직위 미상";
-        const places = new Set(latestSet.map((item) => normalizePlace(item.to)).filter(Boolean));
-        const collision = places.size > 1 || latestSet.length > 2;
-        const haystack = [name, ...history.flatMap((item) => [item.from, item.to, item.fromRole, item.toRole, item.subject])].join(" ").toLocaleLowerCase("ko");
-        return { name, history, latestDate, current, currentRole, collision, haystack };
+        const currentRoles = new Set(latestSet.flatMap((item) => [item.toRole || item.fromRole]).filter(Boolean));
+        const schoolPlaces = new Set(latestSet.filter((item) => isSchoolPlace(item.to)).map((item) => normalizeSchoolPlace(item.to)).filter(Boolean));
+        const collision = schoolPlaces.size > 1;
+        const haystack = [name, ...latestSet.flatMap((item) => [item.to, item.toRole, item.subject])].join(" ").toLocaleLowerCase("ko");
+        return { name, history, latestDate, latestSet, current, currentRole, currentRoles, collision, haystack };
       }).sort((a, b) => a.name.localeCompare(b.name, "ko"));
       updateStats();
       applyFilters();
+      renderMap();
     }
 
     function updateStats() {
@@ -373,7 +511,7 @@
     function applyFilters() {
       const query = $("#searchInput").value.trim().toLocaleLowerCase("ko");
       filteredPeople = people.filter((person) => {
-        const roleMatch = activeRole === "전체" || person.currentRole === activeRole || person.history.some((item) => item.toRole === activeRole || item.fromRole === activeRole);
+        const roleMatch = activeRole === "전체" || person.currentRoles.has(activeRole);
         return roleMatch && (!query || person.haystack.includes(query));
       });
       renderPeople();
@@ -394,7 +532,7 @@
     function renderPeople() {
       $("#resultCount").textContent = `${formatNumber(filteredPeople.length)} RESULT`;
       if (!filteredPeople.length) {
-        $("#resultList").innerHTML = `<div class="empty-list">조건에 맞는 사람이 없습니다.<br>이름의 일부나 이전 근무지로 다시 찾아보세요.</div>`;
+        $("#resultList").innerHTML = `<div class="empty-list">조건에 맞는 사람이 없습니다.<br>이름 또는 현재 근무지로 다시 찾아보세요.</div>`;
         return;
       }
       $("#resultList").innerHTML = filteredPeople.map((person) => `
@@ -454,6 +592,142 @@
         <div class="timeline">${historyHtml}${oldest?.from ? `<article class="event"><div class="event-date">자료 시작 이전</div><div class="event-title">${escapeHtml(oldest.from)}</div><div class="event-note">가장 오래된 자료의 현임지</div></article>` : ""}</div>
       </div>`;
       $("#detailView").querySelectorAll("[data-delete-id]").forEach((button) => button.addEventListener("click", () => deleteCustom(button.dataset.deleteId)));
+    }
+
+    function mapPeopleForSchool(school) {
+      return (school.people || []).map((entry) => {
+        const person = people.find((item) => item.name === entry.name);
+        return person && person.latestDate === entry.date ? { person, entry } : null;
+      }).filter(Boolean);
+    }
+
+    function mappedSchools() {
+      return (SCHOOL_MAP.schools || []).map((school) => ({ ...school, currentPeople: mapPeopleForSchool(school) })).filter((school) => school.currentPeople.length);
+    }
+
+    function switchView(view) {
+      activeView = view;
+      const isMap = view === "map";
+      $("#peopleSearchPanel").hidden = isMap;
+      $("#peopleWorkspace").hidden = isMap;
+      $("#mapWorkspace").hidden = !isMap;
+      document.querySelectorAll("[data-view]").forEach((button) => {
+        const active = button.dataset.view === view;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      if (isMap) renderMap();
+    }
+
+    function renderMap() {
+      const schools = mappedSchools();
+      const source = SCHOOL_MAP.source || {};
+      if (source.url) $("#mapSource").href = source.url;
+      if (source.dataDate) $("#mapSource").textContent = `학교 좌표: 공공데이터포털 · ${formatDate(source.dataDate)}`;
+      renderProvinceMap(schools);
+      if (selectedDistrict && schools.some((school) => school.district === selectedDistrict)) renderDistrictMap(selectedDistrict, schools);
+      else showProvinceMap();
+    }
+
+    function districtStats(district, schools) {
+      const local = schools.filter((school) => school.district === district);
+      return { schools: local.length, people: local.reduce((sum, school) => sum + school.currentPeople.length, 0) };
+    }
+
+    function renderProvinceMap(schools) {
+      const buttons = districts.map((district) => {
+        const stats = districtStats(district.name, schools);
+        return `<button class="district-button" type="button" data-district="${district.name}" style="--x:${district.x}%;--y:${district.y}%" aria-label="${district.name}, 학교 ${stats.schools}곳, 현재 확인 인원 ${stats.people}명"><strong>${district.name}</strong><span>${stats.schools}교 · ${stats.people}명</span></button>`;
+      }).join("");
+      $("#provinceMap").querySelectorAll(".district-button").forEach((button) => button.remove());
+      $("#provinceMap").insertAdjacentHTML("beforeend", buttons);
+      $("#regionDirectory").innerHTML = districts.map((district) => {
+        const stats = districtStats(district.name, schools);
+        return `<button class="region-row" type="button" data-district="${district.name}"><strong>${district.name}</strong><span>${stats.schools}교 · ${stats.people}명</span></button>`;
+      }).join("");
+      document.querySelectorAll("[data-district]").forEach((button) => button.addEventListener("click", () => selectDistrict(button.dataset.district)));
+    }
+
+    function showProvinceMap() {
+      selectedDistrict = "";
+      selectedSchoolId = "";
+      $("#provinceMap").hidden = false;
+      $("#districtMap").hidden = true;
+      $("#mapIntro").hidden = false;
+      $("#schoolBrowser").hidden = true;
+      $("#mapSideMeta").textContent = "18 DISTRICTS";
+      $("#mapPanelMeta").textContent = "SCHEMATIC OVERVIEW";
+      $("#schoolSearch").value = "";
+    }
+
+    function selectDistrict(district) {
+      selectedDistrict = district;
+      selectedSchoolId = "";
+      $("#schoolSearch").value = "";
+      renderDistrictMap(district, mappedSchools());
+    }
+
+    function renderDistrictMap(district, schools) {
+      const local = schools.filter((school) => school.district === district);
+      const peopleCount = local.reduce((sum, school) => sum + school.currentPeople.length, 0);
+      $("#provinceMap").hidden = true;
+      $("#districtMap").hidden = false;
+      $("#mapIntro").hidden = true;
+      $("#schoolBrowser").hidden = false;
+      $("#districtKicker").textContent = `${district.toLocaleUpperCase("ko")} DISTRICT`;
+      $("#districtTitle").textContent = district;
+      $("#districtSummary").textContent = `현재 자료와 연결된 학교 ${local.length}곳 · 확인 인원 ${peopleCount}명`;
+      $("#mapDistrictName").textContent = `${district} 학교 위치`;
+      $("#mapDistrictCount").textContent = `${local.length}개 학교 · 점을 누르면 근무자가 표시됩니다.`;
+      $("#mapSideMeta").textContent = `${local.length} SCHOOLS`;
+      $("#mapPanelMeta").textContent = `${district} · COORDINATE VIEW`;
+
+      const lats = local.map((school) => Number(school.lat));
+      const lons = local.map((school) => Number(school.lon));
+      const minLat = Math.min(...lats), maxLat = Math.max(...lats), minLon = Math.min(...lons), maxLon = Math.max(...lons);
+      const latRange = Math.max(maxLat - minLat, .01), lonRange = Math.max(maxLon - minLon, .01);
+      $("#schoolPins").innerHTML = local.map((school) => {
+        const x = 7 + ((Number(school.lon) - minLon) / lonRange) * 86;
+        const y = 14 + ((maxLat - Number(school.lat)) / latRange) * 76;
+        return `<button class="school-pin${school.id === selectedSchoolId ? " active" : ""}" type="button" data-school-id="${escapeHtml(school.id)}" data-label="${escapeHtml(school.name)} · ${school.currentPeople.length}명" style="--x:${x.toFixed(2)}%;--y:${y.toFixed(2)}%" aria-label="${escapeHtml(school.name)}, 현재 확인 인원 ${school.currentPeople.length}명"></button>`;
+      }).join("");
+      $("#schoolPins").querySelectorAll("[data-school-id]").forEach((button) => button.addEventListener("click", () => selectSchool(button.dataset.schoolId)));
+      renderSchoolList(local);
+      renderSchoolPeople(local.find((school) => school.id === selectedSchoolId));
+    }
+
+    function renderSchoolList(localSchools = mappedSchools().filter((school) => school.district === selectedDistrict)) {
+      const query = $("#schoolSearch").value.trim().toLocaleLowerCase("ko");
+      const visible = localSchools.filter((school) => !query || school.name.toLocaleLowerCase("ko").includes(query));
+      $("#schoolList").innerHTML = visible.length ? visible.map((school) => `<button class="school-row${school.id === selectedSchoolId ? " active" : ""}" type="button" data-school-id="${escapeHtml(school.id)}"><strong>${escapeHtml(school.name)}</strong><span>${school.currentPeople.length}명</span></button>`).join("") : `<div class="empty-list">이 지역에서 학교를 찾지 못했습니다.</div>`;
+      $("#schoolList").querySelectorAll("[data-school-id]").forEach((button) => button.addEventListener("click", () => selectSchool(button.dataset.schoolId)));
+    }
+
+    function selectSchool(schoolId) {
+      selectedSchoolId = schoolId;
+      const local = mappedSchools().filter((school) => school.district === selectedDistrict);
+      document.querySelectorAll("[data-school-id]").forEach((button) => button.classList.toggle("active", button.dataset.schoolId === schoolId));
+      renderSchoolList(local);
+      renderSchoolPeople(local.find((school) => school.id === schoolId));
+    }
+
+    function renderSchoolPeople(school) {
+      if (!school) {
+        $("#schoolPeople").innerHTML = `<p class="map-help">지도 점이나 학교명을 선택하면 현재 확인 인원이 나타납니다.</p>`;
+        return;
+      }
+      $("#schoolPeople").innerHTML = `<h3>${escapeHtml(school.name)}</h3><p class="school-address">${escapeHtml(school.address)}<br>${escapeHtml(school.type)} · 현재 확인 ${school.currentPeople.length}명</p>${school.currentPeople.map(({ person }) => `<button class="map-person" type="button" data-person-name="${escapeHtml(person.name)}"><strong>${escapeHtml(person.name)}</strong><span>${escapeHtml(person.currentRole)}</span></button>`).join("")}`;
+      $("#schoolPeople").querySelectorAll("[data-person-name]").forEach((button) => button.addEventListener("click", () => openPersonFromMap(button.dataset.personName)));
+    }
+
+    function openPersonFromMap(name) {
+      activeRole = "전체";
+      selectedName = name;
+      $("#searchInput").value = name;
+      renderFilters();
+      switchView("people");
+      applyFilters();
+      $("#detailView").scrollTop = 0;
     }
 
     function showToast(message) {
@@ -535,6 +809,9 @@
 
     $("#searchInput").addEventListener("input", applyFilters);
     $("#clearSearch").addEventListener("click", () => { $("#searchInput").value = ""; applyFilters(); $("#searchInput").focus(); });
+    document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => switchView(button.dataset.view)));
+    $("#mapBack").addEventListener("click", showProvinceMap);
+    $("#schoolSearch").addEventListener("input", () => renderSchoolList());
     $("#exportResults").addEventListener("click", exportVisibleCsv);
     $("#dataButton").addEventListener("click", () => $("#dataDialog").showModal());
     $("#sourceButton").addEventListener("click", () => $("#sourceDialog").showModal());
